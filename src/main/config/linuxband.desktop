@@ -2,5 +2,8 @@
 Name=Linux Band
 Comment=A GUI front-end for MMA
 Comment[it]= Un front-end per MMA
-Exec=linuxband
+Exec=/usr/local/bin/linuxband
 Icon=/usr/local/share/linuxband/linuxband.png
+Categories=Audio;Sequencer;Midi;AudioVideoEditing;Music;AudioVideo;
+Terminal=false
+Type=Application
