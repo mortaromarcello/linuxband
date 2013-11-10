@@ -6,9 +6,9 @@ work_dir =
 
 [Preferences]
 jack_connect_startup = True
-mma_grooves_path = /usr/share/mma/lib/stdlib
+mma_grooves_path = /usr/local/share/mma/lib/stdlib
 chord_sheet_font = Verdana 12
-mma_path = /usr/bin/mma
+mma_path = /usr/local/bin/mma
 template_file = @pkgdatadir@/default.mma
 
 [Version]

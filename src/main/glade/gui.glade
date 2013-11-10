@@ -1702,7 +1702,8 @@
                 <property name="left_padding">5</property>
                 <property name="right_padding">5</property>
                 <child>
-                  <widget class="GtkComboBoxEntry" id="comboboxentry1">
+                  <widget class="GtkComboBox" id="comboboxentry1">
+                    <property name="has-entry">True</property>
                     <property name="visible">True</property>
                     <property name="items" translatable="yes"></property>
                     <signal name="changed" handler="on_comboboxentry1_changed_callback"/>
@@ -1899,7 +1900,8 @@
                 <property name="left_padding">5</property>
                 <property name="right_padding">5</property>
                 <child>
-                  <widget class="GtkComboBoxEntry" id="comboboxentry2">
+                  <widget class="GtkComboBox" id="comboboxentry2">
+                    <property name="has-entry">True</property>
                     <property name="visible">True</property>
                     <property name="items" translatable="yes"></property>
                     <signal name="changed" handler="on_comboboxentry2_changed_callback"/>
