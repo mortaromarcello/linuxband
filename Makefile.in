@@ -101,11 +101,13 @@ install: all
 	${INSTALL} -t ${DESTDIR}${pkgdatadir} ${GLADE_DIR}/gui.glade
 	${INSTALL} COPYING ${DESTDIR}${pkgdatadir}/license.txt
 	${INSTALL} -t ${DESTDIR}${pkgdatadir} ${RESOURCES_DIR}/*
+	${INSTALL} -t ${DESTDIR}${datarootdir}/applications ${CONFIG_DIR}/linuxband.desktop
 
 uninstall:
 	rm ${DESTDIR}${bindir}/linuxband
 	rm -rf ${DESTDIR}${pkglibdir}
 	rm -rf ${DESTDIR}${pkgdatadir}
+	rm -rf ${DESTDIR}${datarootdir}/applications/linuxband.desktop
 
 dist:
 	@mkdir -p ${DIST_DIR}/${PACKAGE_FULL_NAME}
