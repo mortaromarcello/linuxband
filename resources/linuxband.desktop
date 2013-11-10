@@ -1,6 +1,0 @@
-[Desktop Entry]
-Name=Linux Band
-Comment=A GUI front-end for MMA
-Comment[it]= Un front-end per MMA
-Exec=linuxband
-Icon=/usr/local/share/linuxband/linuxband.png
