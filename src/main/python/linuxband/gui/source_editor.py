@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import gtk
-import gtksourceview2
-import pango
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import GtkSource
+from gi.repository import Pango
+from gi.repository import GdkPixbuf
 import logging
 from linuxband.glob import Glob
 
@@ -83,22 +84,22 @@ class SourceEditor(object):
         self.move_playhead_to(self.__playhead_pos)
 
     def grab_focus(self):
-        gobject.idle_add(self.__gtksourceview.grab_focus)
+        GObject.idle_add(self.__gtksourceview.grab_focus)
 
     def has_focus(self):
         return self.__gtksourceview.is_focus()
 
     def cut_selection(self):
         buff = self.__sourcebuffer
-        buff.cut_clipboard(gtk.clipboard_get(), True)
+        buff.cut_clipboard(Gtk.clipboard_get(), True)
 
     def copy_selection(self):
         buff = self.__sourcebuffer
-        buff.copy_clipboard(gtk.clipboard_get())
+        buff.copy_clipboard(Gtk.clipboard_get())
 
     def paste_selection(self):
         buff = self.__sourcebuffer
-        buff.paste_clipboard(gtk.clipboard_get(), None, True)
+        buff.paste_clipboard(Gtk.clipboard_get(), None, True)
 
     def delete_selection(self):
         buff = self.__sourcebuffer
@@ -109,10 +110,10 @@ class SourceEditor(object):
         buff.select_range(buff.get_start_iter(), buff.get_end_iter())
 
     def __init_gui(self, glade):
-        scrolledwindow6 = glade.get_widget("scrolledwindow6")
+        scrolledwindow6 = glade.get_object("scrolledwindow6")
 
-        self.__gtksourceview = gtksourceview2.View()
-        self.__sourcebuffer = gtksourceview2.Buffer()
+        self.__gtksourceview = GtkSource.View()
+        self.__sourcebuffer = GtkSource.Buffer()
 
         view = self.__gtksourceview
         buff = self.__sourcebuffer
@@ -133,8 +134,8 @@ class SourceEditor(object):
         view.set_indent_on_tab(True)
         view.set_left_margin(2)
         view.set_right_margin(2)
-        view.modify_font(pango.FontDescription("mono 10"))
-        view.set_wrap_mode(gtk.WRAP_NONE)
+        view.modify_font(Pango.FontDescription("mono 10"))
+        view.set_wrap_mode(Gtk.WrapMode.NONE)
         # playhead text attributes
         tag = buff.create_tag("playhead")
         tag.props.background = "black"
@@ -147,12 +148,12 @@ class SourceEditor(object):
         tag.props.background_set = True
         # playhead marker
         self.LINE_MARKER = 'lineMarker'
-        pixbuf = gtk.gdk.pixbuf_new_from_file(Glob.LINE_MARKER)
-        view.set_mark_category_pixbuf(self.LINE_MARKER, pixbuf)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(Glob.LINE_MARKER)
+        #view.set_mark_category_pixbuf(self.LINE_MARKER, pixbuf)
         # error marker
         self.ERROR_MARKER = 'errorMarker'
-        pixbuf = gtk.gdk.pixbuf_new_from_file(Glob.ERROR_MARKER)
-        view.set_mark_category_pixbuf(self.ERROR_MARKER, pixbuf)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file(Glob.ERROR_MARKER)
+        #view.set_mark_category_pixbuf(self.ERROR_MARKER, pixbuf)
         # buff parameters
         buff.set_highlight_syntax(True)
         buff.set_highlight_matching_brackets(True)

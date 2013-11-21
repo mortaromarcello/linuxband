@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
-import gobject
-from gtk.gdk import CONTROL_MASK
+from gi.repository import Gtk
+from gi.repository import GObject
+from gi.repository import Gdk
 from linuxband.gui.common import Common
 from linuxband.mma.chord_table import chordlist
 
@@ -52,8 +52,8 @@ class ChordEntries(object):
 
     def on_entry_key_release_event_callback(self, widget, event):
         key = event.keyval
-        if key == gtk.keysyms.Escape \
-            or (event.state & CONTROL_MASK and key == gtk.keysyms.bracketright):
+        if key == Gdk.KEY_Escape \
+            or (event.get_state() & CONTROL_MASK and key == Gdk.KEY_bracketright):
             # cancel chord editing
             self.__chord_sheet.render_current_field()
             self.refresh()
@@ -63,7 +63,7 @@ class ChordEntries(object):
         for i in range(self.__song.get_data().get_beats_per_bar()):
             chords.append([self.__entries[i].get_text()])
         self.__chord_sheet.render_current_field(chords)
-        if key == gtk.keysyms.Return or key == gtk.keysyms.KP_Enter:
+        if key == Gdk.KEY_Return or key == Gdk.KEY_KP_Enter:
             if self.__completion_match:
                 self.__completion_match = False
             else:
@@ -86,7 +86,7 @@ class ChordEntries(object):
         self.__entries[0].select_region(-1, -1)
 
     def grab_focus(self, num):
-        gobject.idle_add(self.__entries[num].grab_focus)
+        GObject.idle_add(self.__entries[num].grab_focus)
 
     def has_focus(self):
         return self.__find_focused_entry() != None
@@ -119,24 +119,25 @@ class ChordEntries(object):
 
     def __init_gui(self, glade, chord_names):
         Common.connect_signals(glade, self)
-        self.__hbox6 = glade.get_widget("hbox6")
-        self.__entries = [ glade.get_widget("entry1"),
-                         glade.get_widget("entry2"),
-                         glade.get_widget("entry3"),
-                         glade.get_widget("entry4"),
-                         glade.get_widget("entry5"),
-                         glade.get_widget("entry6"),
-                         glade.get_widget("entry7"),
-                         glade.get_widget("entry8") ]
+        self.__hbox6 = glade.get_object("hbox6")
+        self.__entries = [ glade.get_object("entry1"),
+                         glade.get_object("entry2"),
+                         glade.get_object("entry3"),
+                         glade.get_object("entry4"),
+                         glade.get_object("entry5"),
+                         glade.get_object("entry6"),
+                         glade.get_object("entry7"),
+                         glade.get_object("entry8") ]
         # Initialize chord entry completion
-        model = gtk.ListStore(str)
+        model = Gtk.ListStore(str)
         for chord in chord_names:
             model.append([chord])
         for entry in self.__entries:
-            completion = gtk.EntryCompletion()
+            completion = Gtk.EntryCompletion()
             completion.set_model(model)
             completion.set_text_column(0)
-            completion.set_match_func(self.__match_function)
+            #completion.set_match_func(self.__match_function)
+            completion.set_match_func(self.__match_function, None)
             completion.connect("match-selected", self.__on_completion_match)
             entry.set_completion(completion)
         # hide redundant entries

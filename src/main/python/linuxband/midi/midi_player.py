@@ -20,7 +20,7 @@ import os
 import fcntl
 import select
 import subprocess
-import gobject
+from gi.repository import GObject
 import logging
 from linuxband.glob import Glob
 
@@ -191,16 +191,16 @@ class MidiPlayer:
             if token == MidiPlayer.__EVENT_BAR_NUM:
                 # move the playhead to the new position
                 bar_num = int(self.__read_token(self.__piper))
-                gobject.idle_add(self.__gui.move_playhead_to_bar, bar_num)
+                GObject.idle_add(self.__gui.move_playhead_to_bar, bar_num)
                 self.__playing = True
             elif token == MidiPlayer.__EVENT_LINE_NUM:
                 # move the playhead2 to the new position 
                 lineNum = int(self.__read_token(self.__piper))
-                gobject.idle_add(self.__gui.move_playhead_to_line, lineNum - self.__mma_line_offset - 1)
+                GObject.idle_add(self.__gui.move_playhead_to_line, lineNum - self.__mma_line_offset - 1)
                 self.__playing = True
             elif token == MidiPlayer.__EVENT_SONG_END:
                 # playback has finished
-                gobject.idle_add(self.__gui.hide_playhead)
+                GObject.idle_add(self.__gui.hide_playhead)
                 self.__playing = False
             elif token == MidiPlayer.__COMM_FINISH:
                 logging.debug("Thread finishing")

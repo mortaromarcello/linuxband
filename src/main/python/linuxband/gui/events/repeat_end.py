@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
+from gi.repository import Gtk
 from linuxband.glob import Glob
 from linuxband.mma.bar_info import BarInfo
 from linuxband.gui.common import Common
@@ -33,7 +33,7 @@ class EventRepeatEnd(object):
         # called also when initializing the entries list
         if not self.__toggled_button: return
         try:
-            i = int(widget.child.get_text())
+            i = int(widget.get_child().get_text())
         except ValueError:
             return
         count = str(i)
@@ -63,10 +63,10 @@ class EventRepeatEnd(object):
     def __init_gui(self, glade):
         Common.connect_signals(glade, self)
         # RepeatEnd entry
-        self.__combobox_entry = glade.get_widget("comboboxentry1")
-        self.__entry = self.__combobox_entry.child
+        self.__combobox_entry = glade.get_object("comboboxentry1")
+        self.__entry = self.__combobox_entry.get_child()
         combobox = self.__combobox_entry
-        list_store = gtk.ListStore(str)
+        list_store = Gtk.ListStore(str)
         combobox.set_model(list_store)
         for i in range(2, 6):
             combobox.append_text(str(i))

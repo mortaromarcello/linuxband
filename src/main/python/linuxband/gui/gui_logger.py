@@ -36,7 +36,8 @@ class GuiLogger(object):
             elif record.levelname == 'ERROR': tag = 'fg_red'
 
             start, end = self.__textBuffer.get_bounds() #@UnusedVariable
-            text = self.__textBuffer.get_text(start, end)
+            #text = self.__textBuffer.get_text(start, end)
+            text = self.__textBuffer.get_text(start, end, True)
             eol = '' if text == '' else '\n'
 
             mark = self.__textBuffer.create_mark(None, end, False)
@@ -58,20 +59,23 @@ class GuiLogger(object):
 
     @staticmethod
     def initLogging(glade):
-        textView = glade.get_widget("textview1")
+        textView = glade.get_object("textview1")
         textBuffer = textView.get_buffer()
         GuiLogger.__createColorTags(textView, textBuffer)
         GuiLogger.__configureLogging(textView, textBuffer)
 
     @staticmethod
     def __createColorTags(textView, textBuffer):
-        colormap = textView.get_colormap()
-        color = colormap.alloc_color('red')
-        textBuffer.create_tag('fg_red', foreground_gdk=color)
-        color = colormap.alloc_color('brown');
-        textBuffer.create_tag('fg_brown', foreground_gdk=color)
-        color = colormap.alloc_color('black');
-        textBuffer.create_tag('fg_black', foreground_gdk=color)
+        #colormap = textView.get_colormap()
+        #color = colormap.alloc_color('red')
+        #textBuffer.create_tag('fg_red', foreground_gdk=color)
+        textBuffer.create_tag('fg_red', foreground='red') 
+        #color = colormap.alloc_color('brown')
+        #textBuffer.create_tag('fg_brown', foreground_gdk=color)
+        textBuffer.create_tag('fg_brown', foreground='brown')
+        #color = colormap.alloc_color('black')
+        #textBuffer.create_tag('fg_black', foreground_gdk=color)
+        textBuffer.create_tag('fg_black', foreground='black')
 
     @staticmethod
     def __configureLogging(textView, textBuffer):

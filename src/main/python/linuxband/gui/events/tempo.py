@@ -66,6 +66,6 @@ class EventTempo(object):
     def __init_gui(self, glade):
         Common.connect_signals(glade, self)
         # back, forward, remove event buttons will be hidden
-        self.__alignment15 = glade.get_widget("alignment15")
-        self.__togglebutton2 = glade.get_widget("togglebutton2")
-        self.__spinbutton2 = glade.get_widget("spinbutton2")
+        self.__alignment15 = glade.get_object("alignment15")
+        self.__togglebutton2 = glade.get_object("togglebutton2")
+        self.__spinbutton2 = glade.get_object("spinbutton2")

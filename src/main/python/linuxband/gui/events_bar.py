@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import gtk
+from gi.repository import GObject
+from gi.repository import Gtk
 from linuxband.glob import Glob
 from linuxband.gui.common import Common
 from linuxband.gui.events.groove import EventGroove
@@ -55,7 +55,7 @@ class EventsBar(object):
             self.__song.get_data().get_bar_info(barNum).move_event_backwards(self.__curr_event)
             # move the button and its window
             box.reorder_child(self.__toggled_triple[0], index - 1)
-            gobject.idle_add(self.__move_window_underneath, self.__toggled_triple[1], self.__toggled_triple[0])
+            GObject.idle_add(self.__move_window_underneath, self.__toggled_triple[1], self.__toggled_triple[0])
             # we could have moved the tempo event to the beginning -> became the global tempo
             self.__refresh_globals()
 
@@ -69,7 +69,7 @@ class EventsBar(object):
             self.__song.get_data().get_bar_info(barNum).move_event_forwards(self.__curr_event)
             # move the button and its window
             box.reorder_child(self.__toggled_triple[0], index + 1)
-            gobject.idle_add(self.__move_window_underneath, self.__toggled_triple[1], self.__toggled_triple[0])
+            GObject.idle_add(self.__move_window_underneath, self.__toggled_triple[1], self.__toggled_triple[0])
             # the global tempo or the global groove could have been changed
             self.__refresh_globals()
 
@@ -91,7 +91,7 @@ class EventsBar(object):
         menu = self.__addEventMenu
         x, y = self.__get_widget_xy_position(button, menu)
         self.__toggle_window_close()
-        event = gtk.get_current_event()
+        event = Gtk.get_current_event()
         menu.popup(None, None, lambda menu: (x, y, True), event.button, event.time)
 
     def toggle_button_clicked_callback(self, button, event=None):
@@ -152,7 +152,7 @@ class EventsBar(object):
     def toggle_window_key_pressed_event_callback(self, widget, event):
         """ If the Escape was pressed, close the toggle window. """
         key = event.keyval
-        if key == gtk.keysyms.Escape:
+        if key == Gdk.KEY_Escape:
             self.__toggle_window_close(True)
             return True
 
@@ -176,19 +176,19 @@ class EventsBar(object):
 
     def __init_gui(self, glade):
         Common.connect_signals(glade, self)
-        self.__main_window = glade.get_widget("mainWindow")
-        groove_window = glade.get_widget("grooveWindow")
-        tempo_window = glade.get_widget("tempoWindow")
-        repeat_window = glade.get_widget("repeatWindow")
-        repeat_end_window = glade.get_widget("repeatEndWindow")
-        repeat_ending_window = glade.get_widget("repeatEndingWindow")
-        self.__hbox8 = glade.get_widget("hbox8")
-        self.__hbox7 = glade.get_widget("hbox7")
+        self.__main_window = glade.get_object("mainWindow")
+        groove_window = glade.get_object("grooveWindow")
+        tempo_window = glade.get_object("tempoWindow")
+        repeat_window = glade.get_object("repeatWindow")
+        repeat_end_window = glade.get_object("repeatEndWindow")
+        repeat_ending_window = glade.get_object("repeatEndingWindow")
+        self.__hbox8 = glade.get_object("hbox8")
+        self.__hbox7 = glade.get_object("hbox7")
         # add event button
-        self.__button17 = glade.get_widget("button17")
+        self.__button17 = glade.get_object("button17")
         # global groove and tempo buttons
-        self.__togglebutton1 = glade.get_widget("togglebutton1")
-        self.__togglebutton2 = glade.get_widget("togglebutton2")
+        self.__togglebutton1 = glade.get_object("togglebutton1")
+        self.__togglebutton2 = glade.get_object("togglebutton2")
         # global buttons
         self.__eventGroove = EventGroove(glade, self.__grooves)
         self.__eventTempo = EventTempo(glade)
@@ -200,10 +200,10 @@ class EventsBar(object):
                       Glob.A_REPEAT: "Repeat",
                       Glob.A_REPEAT_ENDING: "RepeatEnding",
                       Glob.A_REPEAT_END: "RepeatEnd" }
-        self.__addEventMenu = gtk.Menu()
+        self.__addEventMenu = Gtk.Menu()
         menu = self.__addEventMenu
         for key in Glob.EVENTS:
-            item = gtk.MenuItem(event_items[key])
+            item = Gtk.MenuItem(event_items[key])
             item.connect_object("activate", self.__add_event, key)
             menu.append(item)
         menu.show_all()
@@ -234,7 +234,7 @@ class EventsBar(object):
         events = self.__song.get_data().get_bar_info(barNum).get_events()
         for event in events:
             title = event[0]
-            button = gtk.ToggleButton()
+            button = Gtk.ToggleButton()
             window = self.__event_windows[title]
             handler = self.__event_window_handlers[title]
             self.__triples.append([button, window, handler, event])
@@ -253,7 +253,7 @@ class EventsBar(object):
         # open the new event window
         for triple in self.__triples:
             if triple[3] is event:
-                gobject.idle_add(triple[0].clicked)
+                GObject.idle_add(triple[0].clicked)
                 break
 
     def __remove_from_triples(self, button):

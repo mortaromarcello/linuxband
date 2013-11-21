@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
-import pango
-import gobject
+from gi.repository import Gtk
+from gi.repository import Pango
+from gi.repository import GObject
 from linuxband.glob import Glob
 from linuxband.mma.bar_info import BarInfo
 from linuxband.gui.common import Common
@@ -69,44 +69,47 @@ class EventGroove(object):
         self.__new_event = None
         # if the focus stayed on the button, put it to first column
         if not self.__treeview1.is_focus() and not self.__treeview2.is_focus():
-            gobject.idle_add(self.__treeview1.grab_focus)
+            GObject.idle_add(self.__treeview1.grab_focus)
         self.__groovesModel = self.__grooves.get_grooves_model()
         self.__treeview1.set_model(self.__groovesModel)
 
     def __init_gui(self, glade):
         Common.connect_signals(glade, self)
         # back, forward, remove event buttons will be hidden
-        self.__alignment12 = glade.get_widget("alignment12")
+        self.__alignment12 = glade.get_object("alignment12")
         # groove description
-        groove_window = glade.get_widget("grooveWindow")
-        textview2 = glade.get_widget("textview2")
+        groove_window = glade.get_object("grooveWindow")
+        textview2 = glade.get_object("textview2")
         self.__textbuffer2 = textview2.get_buffer()
         # text colors      
-        colormap = groove_window.get_colormap()
-        color = colormap.alloc_color('red')
-        self.__textbuffer2.create_tag('fg_red', foreground_gdk=color)
-        color = colormap.alloc_color('brown');
-        self.__textbuffer2.create_tag('fg_brown', foreground_gdk=color)
-        color = colormap.alloc_color('black');
-        self.__textbuffer2.create_tag('fg_black', foreground_gdk=color)
-        self.__textbuffer2.create_tag("bold", weight=pango.WEIGHT_BOLD)
-        self.__togglebutton1 = glade.get_widget("togglebutton1")
+        #colormap = groove_window.get_colormap()
+        #color = colormap.alloc_color('red')
+        #self.__textbuffer2.create_tag('fg_red', foreground_gdk=color)
+        self.__textbuffer2.create_tag('fg_red', foreground='red')
+        #color = colormap.alloc_color('brown')
+        #self.__textbuffer2.create_tag('fg_brown', foreground_gdk=color)
+        self.__textbuffer2.create_tag('fg_brown', foreground='brown')
+        #color = colormap.alloc_color('black');
+        #self.__textbuffer2.create_tag('fg_black', foreground_gdk=color)
+        self.__textbuffer2.create_tag('fg_black', foreground='black')
+        self.__textbuffer2.create_tag("bold", weight=Pango.Weight.BOLD)
+        self.__togglebutton1 = glade.get_object("togglebutton1")
         # groove columns
-        self.__treeview1 = glade.get_widget("treeview1")
-        self.__treeview2 = glade.get_widget("treeview2")
+        self.__treeview1 = glade.get_object("treeview1")
+        self.__treeview2 = glade.get_object("treeview2")
         # grooves column
-        tvcolumn = gtk.TreeViewColumn('Groove')
+        tvcolumn = Gtk.TreeViewColumn('Groove')
         self.__treeview1.append_column(tvcolumn)
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
-        tvcolumn.set_attributes(cell, text=0)
+        #tvcolumn.set_attributes(cell, text=0)
         # groove variation column
         self.__treeview2.set_model(None)
-        tvcolumn = gtk.TreeViewColumn('Variation')
+        tvcolumn = Gtk.TreeViewColumn('Variation')
         self.__treeview2.append_column(tvcolumn)
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         tvcolumn.pack_start(cell, True)
-        tvcolumn.set_attributes(cell, text=0)
+        #tvcolumn.set_attributes(cell, text=0)
 
     def __update_groove_info(self, gr):
         """ Update description, author ... of the currently selected groove. """

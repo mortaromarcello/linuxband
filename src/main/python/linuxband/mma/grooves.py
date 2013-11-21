@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
+from gi.repository import Gtk
 import pickle
 import logging
 import fnmatch
@@ -58,7 +58,7 @@ class Grooves(object):
         """
         The model is used for Groove selection dialog.
         """
-        grooves_model = gtk.ListStore(str, str, str, str, str, str, gtk.ListStore)
+        grooves_model = Gtk.ListStore(str, str, str, str, str, str, Gtk.ListStore)
         sub_liststore = None
         pgroove = None
         march_sub_liststore = None
@@ -69,7 +69,7 @@ class Grooves(object):
             elif index == 0 \
                     or not groove[0].upper().startswith(pgroove) \
                     or groove[0].startswith('Metronome'):   # metronome hack    
-                sub_liststore = gtk.ListStore(str, str, str, str, str, str)
+                sub_liststore = Gtk.ListStore(str, str, str, str, str, str)
                 grooves_model.append(groove + [ sub_liststore ])
                 pgroove = groove[0].upper()
                 # March hack

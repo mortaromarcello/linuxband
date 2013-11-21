@@ -18,9 +18,9 @@
 
 import sys
 import logging
-import pygtk
-pygtk.require("2.0")
-import gobject
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import GObject
 
 # substituted by autoconf
 PACKAGE_NAME = "@PACKAGE_NAME@"
@@ -39,7 +39,7 @@ PYTHON_MINOR = 5
 def main():
     if not check_python_version():
         sys.exit(1)
-    gobject.threads_init()
+    GObject.threads_init()
     sys.path.insert(0, PKG_DATA_DIR)
     from linuxband.glob import Glob
     Glob.PACKAGE_VERSION = PACKAGE_VERSION

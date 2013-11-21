@@ -23,7 +23,7 @@ from linuxband.glob import Glob
 class AboutDialog(object):
 
     def __init__(self, glade):
-        dialog = self.__about_dialog = glade.get_widget("aboutDialog")
+        dialog = self.__about_dialog = glade.get_object("aboutDialog")
         dialog.set_program_name(Glob.PACKAGE_TITLE)
         dialog.set_version(Glob.PACKAGE_VERSION)
         dialog.set_copyright(Glob.PACKAGE_COPYRIGHT + ', ' + Glob.PACKAGE_BUGREPORT)

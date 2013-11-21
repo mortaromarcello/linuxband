@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from linuxband.gui.common import Common
-import gtk
+from gi.repository import Gtk
 
 class Preferences(object):
 
@@ -30,17 +30,17 @@ class Preferences(object):
         self.__initWidgets();
         result = self.__preferencesdialog.run()
         self.__preferencesdialog.hide()
-        if (result == gtk.RESPONSE_OK):
+        if (result == Gtk.ResponseType.OK):
             self.__apply_changes()
             self.__config.save_config()
 
     def __init_gui(self, glade):
         Common.connect_signals(glade, self)
-        self.__preferencesdialog = glade.get_widget("preferencesDialog")
-        self.__filechooserbutton1 = glade.get_widget("filechooserbutton1")
-        self.__filechooserbutton2 = glade.get_widget("filechooserbutton2")
-        self.__fontbutton1 = glade.get_widget("fontbutton1")
-        self.__checkbutton2 = glade.get_widget("checkbutton2")
+        self.__preferencesdialog = glade.get_object("preferencesDialog")
+        self.__filechooserbutton1 = glade.get_object("filechooserbutton1")
+        self.__filechooserbutton2 = glade.get_object("filechooserbutton2")
+        self.__fontbutton1 = glade.get_object("fontbutton1")
+        self.__checkbutton2 = glade.get_object("checkbutton2")
 
     def __initWidgets(self):
         self.__filechooserbutton1.set_filename(self.__config.get_mma_path())
