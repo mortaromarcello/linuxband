@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, Pango
 import cairo
-import pango
 import pangocairo
 import copy
 from gi.repository import Gdk
@@ -343,7 +342,7 @@ class ChordSheet(object):
     db = self.double_buffer
     if db is not None:
       cc = cairo.Context(db)
-      cc.rectangle(x, y, widht, height)
+      cc.rectangle(x, y, width, height)
       cc.set_line_width(0.5)
       cc.set_source_rgb(color.red, color.green, color.blue)
       cc.stroke()
@@ -355,7 +354,8 @@ class ChordSheet(object):
       while True:
         size = size - Pango.SCALE
         fd.set_size(size)
-        pango_layout.set_font_description(fd)
+        #pango_layout.set_font_description(fd)
+        pango_layout.set_font_description(None)
         text_width, text_height = pango_layout.get_pixel_size()
         if text_width <= width and text_height <= height:
           break
@@ -565,7 +565,8 @@ class ChordSheet(object):
             pango_layout = pc.create_layout()
             pango_layout.set_text(str(chord_num))
             fd = Pango.FontDescription('Monospace Bold 8')
-            pango_layout.set_font_description(fd)
+            #pango_layout.set_font_description(fd)
+            pango_layout.set_font_description(None)
             ink, logical = pango_layout.get_pixel_extents() #@UnusedVariable
             pc.update_layout(pango_layout)
             pc.show_layout(pango_layout)
