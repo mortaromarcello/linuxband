@@ -19,6 +19,7 @@ from gi.repository import Pango
 import logging
 from gi.repository import GObject
 from gi.repository import Gtk
+from gi.repository import Gdk
 from linuxband.glob import Glob
 from linuxband.gui.gui_logger import GuiLogger
 from linuxband.config import Config

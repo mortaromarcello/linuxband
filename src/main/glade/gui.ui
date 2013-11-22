@@ -772,7 +772,7 @@
                                     <signal handler="drawing_area_motion_notify_event_callback" name="motion_notify_event"/>
                                     <signal handler="drawing_area_realize_event_callback" name="realize"/>
                                     <signal handler="drawing_area_draw_event_callback" name="draw" />
-                                    <!--signal handler="drawing_area_configure_event_callback" name="configure-event" /-->
+                                    <signal handler="drawing_area_configure_event_callback" name="configure-event" />
                                   </object>
                                 </child>
                               </object>

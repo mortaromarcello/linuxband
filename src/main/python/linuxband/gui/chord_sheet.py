@@ -56,7 +56,7 @@ class ChordSheet(object):
       cc = cairo.Context(db)
       color = Gdk.color_parse(ChordSheet.__color_no_song)
       cc.set_source_rgb(color.red, color.green, color.blue)
-      cc.rectangle(0, 0, db.get_width, db.get_height)
+      cc.rectangle(0, 0, db.get_width(), db.get_height())
       db.flush()
     #self.drawable = self.__area.window
     #self.gc = self.drawable.new_gc()
@@ -78,10 +78,15 @@ class ChordSheet(object):
     return False
         
   def drawing_area_configure_event_callback(self, widget, event, data=None):
+    """Configure the double buffer based on size of the widget"""
+
+    # Destroy previous buffer
     if self.double_buffer is not None:
       self.double_buffer.finish()
       self.double_buffer = None
-    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.__drawing_area_width, self.__drawing_area_height)
+
+    # Create a new buffer
+    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, widget.get_allocated_width(), widget.get_allocated_height())
     logging.debug('Inizialized double buffer')
     return False
 
@@ -314,6 +319,9 @@ class ChordSheet(object):
   def __init_gui(self, glade):
     Common.connect_signals(glade, self)
     self.__area = glade.get_object("drawingarea1")
+    #
+    self.double_buffer = None
+    #
     #self.__colormap = self.__area.get_colormap()
     #self.__colormap = self.__area.get_visual()
     #self.__drawing_area_width, self.__drawing_area_height = self.__area.get_size_request()
@@ -325,12 +333,6 @@ class ChordSheet(object):
     self.__bar_width = self.__drawing_area_width / self.__song.get_data().get_beats_per_bar()
     self.__bar_chords_width = self.__bar_width * 9 / 10
     self.__bar_info_width = self.__bar_width - self.__bar_chords_width
-    #
-    #
-    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.__drawing_area_width, self.__drawing_area_height)
-    logging.debug('self.double_buffer inizialized')
-    #
-    #
     self.__area.show()
 
   def __render_chord_xy(self, chord, x, y, width, height, playhead):
@@ -354,8 +356,7 @@ class ChordSheet(object):
       while True:
         size = size - Pango.SCALE
         fd.set_size(size)
-        #pango_layout.set_font_description(fd)
-        pango_layout.set_font_description(None)
+        pango_layout.set_font_description(fd)
         text_width, text_height = pango_layout.get_pixel_size()
         if text_width <= width and text_height <= height:
           break
@@ -565,8 +566,7 @@ class ChordSheet(object):
             pango_layout = pc.create_layout()
             pango_layout.set_text(str(chord_num))
             fd = Pango.FontDescription('Monospace Bold 8')
-            #pango_layout.set_font_description(fd)
-            pango_layout.set_font_description(None)
+            pango_layout.set_font_description(fd)
             ink, logical = pango_layout.get_pixel_extents() #@UnusedVariable
             pc.update_layout(pango_layout)
             pc.show_layout(pango_layout)
