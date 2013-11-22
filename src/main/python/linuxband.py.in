@@ -50,7 +50,7 @@ def main():
     Glob.LINE_MARKER = "%s/line-pointer.png" % PKG_DATA_DIR
     Glob.ERROR_MARKER = "%s/error-pointer.png" % PKG_DATA_DIR
     Glob.DEFAULT_CONFIG_FILE = "%s/linuxband.rc" % PKG_DATA_DIR
-    Glob.GLADE = "%s/gui.glade" % PKG_DATA_DIR
+    Glob.GLADE = "%s/gui.ui" % PKG_DATA_DIR
     Glob.LICENSE = "%s/license.txt" % PKG_DATA_DIR
     Glob.PLAYER_PROGRAM = "%s/linuxband-player" % PKG_LIB_DIR
     # initialize logging

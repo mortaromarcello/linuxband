@@ -22,6 +22,6 @@ class Logger(object):
 
     @staticmethod
     def initLogging(log_level):
-        consoleFormat = "%(asctime)s %(levelname)s %(funcName)s %(message)s"
+        consoleFormat = "%(asctime)s %(levelname)s %(funcName)s %(message)s %(pathname)s %(lineno)d"
         dateFormat = "%H:%M:%S"
         logging.basicConfig(stream=sys.stdout, level=log_level, format=consoleFormat, datefmt=dateFormat)

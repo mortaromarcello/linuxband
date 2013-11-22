@@ -92,7 +92,7 @@ class EventGroove(object):
         #color = colormap.alloc_color('black');
         #self.__textbuffer2.create_tag('fg_black', foreground_gdk=color)
         self.__textbuffer2.create_tag('fg_black', foreground='black')
-        self.__textbuffer2.create_tag("bold", weight=Pango.Weight.BOLD)
+        #self.__textbuffer2.create_tag("bold", weight=Pango.Weight.BOLD)
         self.__togglebutton1 = glade.get_object("togglebutton1")
         # groove columns
         self.__treeview1 = glade.get_object("treeview1")

@@ -75,14 +75,15 @@ class ChordSheet(object):
       cr.set_source_surface(self.double_buffer, 0.0, 0.0)
       cr.paint()
     else:
-      print('Invalid double buffer')
+      logging.debug('Invalid double buffer')
     return False
         
   def drawing_area_configure_event_callback(self, widget, event, data=None):
     if self.double_buffer is not None:
       self.double_buffer.finish()
       self.double_buffer = None
-    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.__drawing_area_width, self.__drawing_area_height)      
+    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.__drawing_area_width, self.__drawing_area_height)
+    logging.debug('Inizialized double buffer')
     return False
 
   def drawing_area_expose_event_callback(self, widget, event):
@@ -314,9 +315,6 @@ class ChordSheet(object):
   def __init_gui(self, glade):
     Common.connect_signals(glade, self)
     self.__area = glade.get_object("drawingarea1")
-    #
-    self.double_buffer = None
-    #
     #self.__colormap = self.__area.get_colormap()
     #self.__colormap = self.__area.get_visual()
     #self.__drawing_area_width, self.__drawing_area_height = self.__area.get_size_request()
@@ -328,6 +326,12 @@ class ChordSheet(object):
     self.__bar_width = self.__drawing_area_width / self.__song.get_data().get_beats_per_bar()
     self.__bar_chords_width = self.__bar_width * 9 / 10
     self.__bar_info_width = self.__bar_width - self.__bar_chords_width
+    #
+    #
+    self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.__drawing_area_width, self.__drawing_area_height)
+    logging.debug('self.double_buffer inizialized')
+    #
+    #
     self.__area.show()
 
   def __render_chord_xy(self, chord, x, y, width, height, playhead):
@@ -362,7 +366,7 @@ class ChordSheet(object):
       cc.show_page()
       db.flush()
     else:
-      print('Invalid double buffer')
+      logging.debug('Invalid double buffer')
 
         
     #gc = self.pixmap.new_gc()
@@ -451,7 +455,7 @@ class ChordSheet(object):
         i = i + 1
       
     else:
-      print('Invalid double buffer')
+      logging.debug('Invalid double buffer')
       
     #  
     #gc = self.pixmap.new_gc()
@@ -569,7 +573,7 @@ class ChordSheet(object):
             cc.show_page()
             db.flush()
       else:
-        print("Invalid double buffer")
+        logging.debug("Invalid double buffer")
       
 
       #gc = self.drawable.new_gc()
