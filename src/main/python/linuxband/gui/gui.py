@@ -271,12 +271,12 @@ class Gui():
         elif self.__cursor_pos > new_end:
           self.__cursor_pos = new_end
         self.__move_cursor_to(self.__cursor_pos)
-        #self.__adjust_selection_bar_count_changed()
+        self.__adjust_selection_bar_count_changed()
 
     def new_song_loaded(self):
       """ """
-      #self.__move_cursor_to(0) # cursor on field 0 => global buttons get refreshed
-      #self.__destroy_selection()
+      self.__move_cursor_to(0) # cursor on field 0 => global buttons get refreshed
+      self.__destroy_selection()
 
     def on_draw(self, widget, cr):
       cr.set_source_surface(self.double_buffer, 0.0, 0.0)
