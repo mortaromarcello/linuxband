@@ -328,7 +328,6 @@ class Gui():
         if chords == None and bar_num < self.__song.get_data().get_bar_count():
           chords = self.__song.get_data().get_bar_chords(bar_num).get_chords()
         self.__render_chords_xy(bar_num, chords, field_x, field_y, playhead, cursor, selection)
-        #self.__area.queue_draw_area(field_x, field_y, self.__bar_chords_width, ChordSheet.__bar_height)
       else:
         bar_info = None
         if bar_num <= self.__song.get_data().get_bar_count():
@@ -337,8 +336,7 @@ class Gui():
         if bar_num < self.__song.get_data().get_bar_count():
           chord_num = self.__song.get_data().get_bar_chords(bar_num).get_number()
         self.__render_bar_info_xy(bar_num, chord_num, bar_info, field_x, field_y, cursor, selection)
-        #self.__area.queue_draw_area(field_x, field_y, self.__bar_info_width, ChordSheet.__bar_height)
-
+        
     def __render_chords_xy(self, bar_num, chords, bar_x, bar_y, playhead, cursor, selection):
       if bar_num >= self.__song.get_data().get_bar_count():
         color_code = Gui.ChordSheet.__color_no_song
@@ -350,7 +348,6 @@ class Gui():
         color_code = Gui.ChordSheet.__color_cursor
       else:
         color_code = Gui.ChordSheet.__color_song
-      #color = self.__colormap.alloc_color(color_code)
       db = self.double_buffer
       if db is not None:
         color = Gdk.color_parse(color_code)
@@ -396,48 +393,6 @@ class Gui():
           i = i + 1
       else:
         logging.debug('Invalid double buffer')
-      #gc = self.pixmap.new_gc()
-      #gc.copy(self.gc)
-      #gc.set_foreground(color)
-      #self.pixmap.draw_rectangle(gc, True, bar_x , bar_y, self.__bar_chords_width, ChordSheet.__bar_height)
-      #if cursor: # black border
-        #color = self.__colormap.alloc_color("black")
-        #gc.set_foreground(color)
-        #self.pixmap.draw_rectangle(gc, False, bar_x , bar_y, self.__bar_chords_width - 1, ChordSheet.__bar_height - 1)
-      #if not chords:
-        #return
-      #if playhead:
-        #color = self.__colormap.alloc_color("white")
-      #else:
-        #color = self.__colormap.alloc_color("black")
-      #gc.set_foreground(color)
-      #bar_chords_width = self.__bar_chords_width - (self.__song.get_data().get_beats_per_bar()) * ChordSheet.__cell_padding
-      #bar_chords_height = ChordSheet.__bar_height - 2 * ChordSheet.__cell_padding
-      #chord_width = bar_chords_width / self.__song.get_data().get_beats_per_bar()
-      #i = 0
-      #while i < len(chords):
-        #if chords[i][0] == '/':
-          #i = i + 1
-          #continue
-        # there is a chord on this beat
-        #if i % 2 == 0 \
-          #and i + 1 < self.__song.get_data().get_beats_per_bar() \
-          #and (i + 1 >= len(chords) or chords[i + 1][0] == '/' or chords[i + 1][0] == ''):
-          # the next beat has no chord we can expand us
-          #self.__render_chord_xy(chords[i][0],
-                          #bar_x + (chord_width + ChordSheet.__cell_padding) * i,
-                          #bar_y + ChordSheet.__cell_padding,
-                          #chord_width + ChordSheet.__cell_padding + chord_width,
-                          #bar_chords_height,
-                          #playhead)
-        #else:
-          #self.__render_chord_xy(chords[i][0],
-                          #bar_x + (chord_width + ChordSheet.__cell_padding) * i,
-                          #bar_y + ChordSheet.__cell_padding,
-                          #chord_width,
-                          #bar_chords_height,
-                          #playhead)
-        #i = i + 1
 
     def __get_pos_x(self, pos):
       return (pos / 2 % Gui.ChordSheet.__bars_per_line) * self.__bar_width \
@@ -490,31 +445,6 @@ class Gui():
         db.flush()
       else:
         logging.debug('Invalid double buffer')
-      #color = self.__colormap.alloc_color(color_code)
-      #gc = self.drawable.new_gc()
-      #gc.copy(self.gc)
-      #gc.set_foreground(color)
-      #self.pixmap.draw_rectangle(gc, True, x , y, self.__bar_info_width, ChordSheet.__bar_height)
-      #if cursor: # black border
-        #color = self.__colormap.alloc_color('black')
-        #gc.set_foreground(color)
-        #self.pixmap.draw_rectangle(gc, False, x, y, self.__bar_info_width - 1, ChordSheet.__bar_height - 1)
-      #color = self.__colormap.alloc_color('black')
-      #gc.set_foreground(color)
-      #repeat_begin = bar_info.has_repeat_begin() if bar_info else False
-      #repeat_end = bar_info.has_repeat_end() if bar_info else False
-      #if repeat_begin or repeat_end: # draw repetitions
-        #if repeat_begin: self.__draw_repetition(x, y, gc, False)
-        #if repeat_end: self.__draw_repetition(x, y, gc, True)
-      #else:
-        #if bar_num < self.__song.get_data().get_bar_count() and chord_num: # draw bar number
-            #pango_layout = self.__area.create_pango_layout("")
-            #pango_layout.set_text(str(chord_num))
-            #fd = pango.FontDescription('Monospace Bold 8')
-            #pango_layout.set_font_description(fd)
-            #ink, logical = pango_layout.get_pixel_extents() #@UnusedVariable
-            #self.pixmap.draw_layout(gc, x + ChordSheet.__cell_padding,
-            #                   y + (ChordSheet.__bar_height - ink[1] - ink[3]) - ChordSheet.__cell_padding, pango_layout)
 
     def __render_chord_xy(self, chord, x, y, width, height, playhead):
       """ Render one chord on position x,y. """
@@ -542,26 +472,6 @@ class Gui():
         db.flush()
       else:
         logging.debug('Invalid double buffer')
-      #if playhead: color = self.__colormap.alloc_color('white')
-      #else: color = self.__colormap.alloc_color('black')
-      #gc = self.pixmap.new_gc()
-      #gc.copy(self.gc)
-      #gc.set_line_attributes(1, gtk.gdk.LINE_SOLID, gtk.gdk.CAP_ROUND, gtk.gdk.JOIN_ROUND)
-      #gc.set_foreground(color)
-      #self.pixmap.draw_rectangle(gc, False, x , y, width, height)
-      #pango_layout = self.__area.create_pango_layout("")
-      #pango_layout.set_text(chord)
-      #fd = pango.FontDescription(self.__config.get_chord_sheet_font())
-      #size = (ChordSheet.__max_bar_chords_font + 1) * pango.SCALE
-      #while True:
-        #size = size - pango.SCALE
-        #fd.set_size(size)
-        #pango_layout.set_font_description(fd)
-        #text_width, text_height = pango_layout.get_pixel_size()
-        #if text_width <= width and text_height <= height:
-          #break
-      #ink, logical = pango_layout.get_pixel_extents() #@UnusedVariable
-      #self.pixmap.draw_layout(gc, x, y + (height - ink[1] - ink[3]), pango_layout)
 
     def __draw_repetition(self, x, y, gc, end):
       db = self.double_buffer
@@ -574,7 +484,6 @@ class Gui():
         height = Gui.ChordSheet.__bar_height - 2 * ChordSheet.__cell_padding
         cc.rectangle(middle_x, start_y, width, height)
         cc.fill()
-        #self.pixmap.draw_rectangle(gc, True, middle_x, start_y, width, height)
         # draw points
         point_size = ChordSheet.__cell_padding * 2
         upper_y = y + ChordSheet.__bar_height / 4
@@ -583,8 +492,6 @@ class Gui():
         else: x = x + self.__bar_info_width * 4 / 5 - point_size
         cc.arc(x, upper_y, point_size, point_size, 0, 360 * 64)
         cc.arc(x, lower_y, point_size, point_size, 0, 360 * 64)
-        #self.pixmap.draw_arc(self.gc, True, x, upper_y, point_size, point_size, 0, 360 * 64)
-        #self.pixmap.draw_arc(self.gc, True, x, lower_y, point_size, point_size, 0, 360 * 64)
         cc.fill()
         db.flush()
       else:
