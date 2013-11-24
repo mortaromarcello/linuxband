@@ -1,0 +1,83 @@
+# Italian translations for gtk package.
+# Copyright (C) 2013 THE gtk'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gtk package.
+# Marcello Mortaro <mortaromarcello@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gtk 3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-24 09:46+0100\n"
+"PO-Revision-Date: 2013-11-24 11:30+0100\n"
+"Last-Translator: Marcello Mortaro <mortaromarcello@gmail.com>\n"
+"Language-Team: Italian\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: gui.py:48
+msgid "_Quit me!"
+msgstr "_Esci"
+
+#: gui.py:48
+msgid "Quit the Program"
+msgstr "Esci dal programma"
+
+#: gui.py:49
+msgid "_New"
+msgstr "Nuovo"
+
+#: gui.py:49
+msgid "New file"
+msgstr "Nuovo file"
+
+#: gui.py:50
+msgid "_Open"
+msgstr "Apri"
+
+#: gui.py:50
+msgid "Open file"
+msgstr "Apri il file"
+
+#: gui.py:51
+msgid "_Recent songs"
+msgstr "Canzoni recenti"
+
+#: gui.py:51
+msgid "Recent songs"
+msgstr "Canzoni recenti"
+
+#: gui.py:52
+msgid "_Save"
+msgstr "Salva"
+
+#: gui.py:52
+msgid "Save file"
+msgstr "Salva il file"
+
+#: gui.py:53
+msgid "Save _as"
+msgstr "Salva _come"
+
+#: gui.py:53
+msgid "Save as"
+msgstr "Salva come"
+
+#: gui.py:54
+msgid "Export midi"
+msgstr "Esporta midi"
+
+#: gui.py:54
+msgid "Export to midi file"
+msgstr "Esporta in midi file"
+
+#: gui.py:55
+msgid "_File"
+msgstr "_File"
+
+#: gui.py:56
+msgid "_Quit"
+msgstr "_Esci"
+
