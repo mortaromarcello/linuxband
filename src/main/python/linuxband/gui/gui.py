@@ -23,7 +23,6 @@ gettext.textdomain(PACKAGE_NAME)
 _ = gettext.gettext
 
 class Gui():
-  PIPPO = 'pippo'
   ui = '''
   <ui>
     <menubar name="MenuBar">
@@ -64,6 +63,7 @@ class Gui():
     self.__config = Config()
     self.__config.load_config()
     self.__song = Song(MidiGenerator(self.__config))
+    self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -201,6 +201,16 @@ class Gui():
     #  self.__song.write_to_mma_file(self.__output_file)
     return True
 
+  def __handle_unsaved_changes(self):
+    """ """
+    if self.__song.get_data().is_save_needed():
+      self.__save_changes_dialog.set_property("text", "Save changes to " + self.__song.get_data().get_title() + "?")
+      self.__save_changes_dialog.set_property("secondary_text", "Your changes will be lost if you don't save them.")
+      result = self.__save_changes_dialog.run()
+      self.__save_changes_dialog.hide()
+      if (result == gtk.ResponseType.YES):
+        return self.__do_save_file()
+
   def __do_save_as(self):
   #  if (self.__save_as_dialog.get_current_folder() <> self.__config.get_work_dir()):
   #    self.__save_as_dialog.set_current_folder(self.__config.get_work_dir())
@@ -281,7 +291,7 @@ class Gui():
     def on_draw(self, widget, cr):
       cr.set_source_surface(self.double_buffer, 0.0, 0.0)
       cr.paint()
-      print "on_draw"
+      logging.debug('on_draw')
       return False
 
     def on_realize(self, widget):
