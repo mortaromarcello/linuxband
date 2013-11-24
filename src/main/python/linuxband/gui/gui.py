@@ -64,6 +64,7 @@ class Gui():
     self.__config.load_config()
     self.__song = Song(MidiGenerator(self.__config))
     self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+    self.__open_file_dialog = Gtk.FileChooserDialog(_('Open MMA file'), action=Gtk.FileChooserAction.OPEN,buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -126,19 +127,19 @@ class Gui():
       
   def open_file_callback(self, menuitem):
     """ Open. Signal handler for activate in GtkAction 'imagemenuitem2' stock-id= gtk-open """
-    #if self.__handle_unsaved_changes():
-    #  if (self.__open_file_dialog.get_current_folder() <> self.__config.get_work_dir()):
-    #    self.__open_file_dialog.set_current_folder(self.__config.get_work_dir())
-    #result = self.__open_file_dialog.run()
-    #self.__open_file_dialog.hide()
-    #if (result == Gtk.ResponseType.OK):
-    #  self.__config.set_work_dir(self.__open_file_dialog.get_current_folder())
-    #  full_name = self.__open_file_dialog.get_filename()
+    if self.__handle_unsaved_changes():
+      if (self.__open_file_dialog.get_current_folder() <> self.__config.get_work_dir()):
+        self.__open_file_dialog.set_current_folder(self.__config.get_work_dir())
+    result = self.__open_file_dialog.run()
+    self.__open_file_dialog.hide()
+    if (result == Gtk.ResponseType.OK):
+      self.__config.set_work_dir(self.__open_file_dialog.get_current_folder())
+      full_name = self.__open_file_dialog.get_filename()
     #  manager = Gtk.RecentManager.get_default()
     #  manager.add_item('file://' + full_name)
-    #  self.__input_file = full_name
-    #  self.__output_file = full_name
-    #  self.__do_open_file()
+      self.__input_file = full_name
+      self.__output_file = full_name
+      self.__do_open_file()
 
   def save_file_callback(self, menuitem):
     """ Save. Signal handler for activate in GtkAction 'imagemenuitem3' stock-id= gtk-save """
@@ -253,6 +254,9 @@ class Gui():
     def __init__(self, song, config):
       Gtk.DrawingArea.__init__(self)
       self.set_size_request(1000,600)
+      self.has_focus = True
+      self.can_focus = True
+      self.add_events(Gdk.EventMask.BUTTON1_MOTION_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.STRUCTURE_MASK)
       self.__song = song
       self.__config = config
       self.__playhead_pos = -1
@@ -269,6 +273,8 @@ class Gui():
       self.connect("draw", self.on_draw)
       self.connect("realize", self.on_realize)
       self.connect("configure-event", self.on_configure)
+      self.connect("key-press-event", self.on_key_press)
+      self.connect("motion-notify-event", self.on_motion_notify)
 
     def set_song_bar_count(self, bar_count):
         new_end = bar_count * 2
@@ -326,7 +332,66 @@ class Gui():
       print widget.get_allocated_height()
       logging.debug("on_configure")
       return False
-      
+
+    def on_key_press(self, widget, event):
+      """ """
+      key = event.keyval
+      old_pos = self.__cursor_pos
+      if key == Gdk.KEY_Left or key == Gdk.KEY_h or key == Gdk.KEY_H:
+        targetPos = self.__cursor_pos - 1
+        if targetPos >= 0:
+          self.__move_cursor_to(targetPos)
+      elif key == Gdk.KEY_Right or key == Gdk.KEY_l or key == Gdk.KEY_L:
+        self.__move_cursor_to(self.__cursor_pos + 1)
+      elif key == Gdk.KEY_Up or key == Gdk.KEY_k or key == Gdk.KEY_K:
+        targetPos = self.__cursor_pos - ChordSheet.__bars_per_line * 2
+        if targetPos >= 0:
+          self.__move_cursor_to(targetPos)
+      elif key == Gdk.KEY_Down or key == Gdk.KEY_j or key == Gdk.KEY_J:
+        self.__move_cursor_to(self.__cursor_pos + ChordSheet.__bars_per_line * 2)
+      elif key == Gdk.KEY_Home:
+        self.__move_cursor_to(0)
+      elif key == Gdk.KEY_End:
+        self.__move_cursor_to(self.__end_position)
+      elif event.get_state() & CONTROL_MASK and key == Gdk.KEY_Delete:
+        self.cut_selection()
+      elif event.get_state() & CONTROL_MASK and key == Gdk.KEY_Insert:
+        self.copy_selection()
+      elif event.get_state() & SHIFT_MASK and key == Gdk.KEY_Insert:
+        self.paste_selection()
+      elif key == Gdk.KEY_Delete:
+        self.delete_selection()
+      # move focus to chord entries
+      elif self.__is_bar_chords(self.__cursor_pos):
+        if key == Gdk.KEY_Return:
+          self.__move_cursor_to(self.__cursor_pos + 2)
+          self.__destroy_selection()
+      # adjust selection
+      if key in [ Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Home, Gdk.KEY_End ]:
+        if event.get_state() & SHIFT_MASK:
+          self.__adjust_selection(old_pos)
+        else:
+          self.__destroy_selection()
+      if key in [ Gdk.KEY_H, Gdk.KEY_L, Gdk.KEY_K, Gdk.KEY_J ]:
+        self.__adjust_selection(old_pos)
+      if key in [ Gdk.KEY_h, Gdk.KEY_l, Gdk.KEY_k, Gdk.KEY_j ]:
+        self.__destroy_selection()
+      # the event has been handled
+      logging.debug('on_key_press')
+      return True
+
+    def on_motion_notify(self, widget, event):
+      """ """
+      # selection by mouse
+      if event.get_state() & Gdk.EventMask.BUTTON1_MOTION_MASK:
+        pos = self.__locate_mouse_click(event.x, event.y)
+        old_pos = self.__cursor_pos
+        if not pos == old_pos:
+          self.__move_cursor_to(pos)
+          self.__adjust_selection(old_pos)
+      logging.debug('on_motion_notify')
+      return False
+
     def __render_field(self, field_num, chords=None):
       cursor = self.__cursor_pos == field_num
       playhead = self.__playhead_pos == field_num
