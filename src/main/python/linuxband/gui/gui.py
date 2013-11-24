@@ -3,6 +3,7 @@
 import sys, os
 from gi.repository import GObject, Gtk, Gdk, Pango, PangoCairo
 import cairo
+import math
 import logging
 import gettext
 import locale
@@ -505,8 +506,8 @@ class Gui():
         repeat_begin = bar_info.has_repeat_begin() if bar_info else False
         repeat_end = bar_info.has_repeat_end() if bar_info else False
         if repeat_begin or repeat_end: # draw repetitions
-          if repeat_begin: self.__draw_repetition(x, y, gc, False)
-          if repeat_end: self.__draw_repetition(x, y, gc, True)
+          if repeat_begin: self.__draw_repetition(x, y, False)
+          if repeat_end: self.__draw_repetition(x, y, True)
         else:
           if bar_num < self.__song.get_data().get_bar_count() and chord_num: # draw bar number
             pango_layout = PangoCairo.create_layout(cc)
@@ -548,7 +549,7 @@ class Gui():
       else:
         logging.debug('Invalid double buffer')
 
-    def __draw_repetition(self, x, y, gc, end):
+    def __draw_repetition(self, x, y, end):
       db = self.double_buffer
       if db is not None:
         cc = cairo.Context(db)
@@ -556,17 +557,19 @@ class Gui():
         middle_x = x + self.__bar_info_width / 2
         start_y = y + Gui.ChordSheet.__cell_padding
         width = Gui.ChordSheet.__cell_padding
-        height = Gui.ChordSheet.__bar_height - 2 * ChordSheet.__cell_padding
+        height = Gui.ChordSheet.__bar_height - 2 * Gui.ChordSheet.__cell_padding
         cc.rectangle(middle_x, start_y, width, height)
         cc.fill()
         # draw points
-        point_size = ChordSheet.__cell_padding * 2
-        upper_y = y + ChordSheet.__bar_height / 4
-        lower_y = y + ChordSheet.__bar_height * 3 / 4 - point_size
+        point_size = Gui.ChordSheet.__cell_padding * 2
+        upper_y = y + Gui.ChordSheet.__bar_height / 4
+        lower_y = y + Gui.ChordSheet.__bar_height * 3 / 4 - point_size
         if end: x = x + self.__bar_info_width / 5
         else: x = x + self.__bar_info_width * 4 / 5 - point_size
-        cc.arc(x, upper_y, point_size, point_size, 0, 360 * 64)
-        cc.arc(x, lower_y, point_size, point_size, 0, 360 * 64)
+        #cc.arc(x, upper_y, point_size, point_size, 360 * 64)
+        #cc.arc(x, lower_y, point_size, point_size, 360 * 64)
+        cc.arc(x, upper_y, point_size, 0, 360 * 64)
+        cc.arc(x, lower_y, point_size, 0, 360 * 64)
         cc.fill()
         db.flush()
       else:
@@ -599,8 +602,6 @@ class Gui():
       self.__selection_start = None
       self.__selection = set([])
       self.__redraw_selection(old_selection)
-
-
 
 def main():
   GObject.threads_init()
