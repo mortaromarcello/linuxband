@@ -71,8 +71,14 @@ class Gui():
     self.__mma_filter = Gtk.FileFilter()
     self.__mma_filter.set_name(_("MMA files"))
     self.__mma_filter.add_pattern("*.mma")
+    self.__any_filter = Gtk.FileFilter()
+    self.__any_filter.set_name(_("Any file"))
+    self.__any_filter.add_pattern("*")
     self.__open_file_dialog.add_filter(self.__mma_filter)
+    self.__open_file_dialog.add_filter(self.__any_filter)
     self.__save_as_dialog = Gtk.FileChooserDialog(_('Save the song as'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+    self.__save_as_dialog.add_filter(self.__mma_filter)
+    self.__save_as_dialog.add_filter(self.__any_filter)
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -221,28 +227,28 @@ class Gui():
         return self.__do_save_file()
 
   def __do_save_as(self):
-  #  if (self.__save_as_dialog.get_current_folder() <> self.__config.get_work_dir()):
-  #    self.__save_as_dialog.set_current_folder(self.__config.get_work_dir())
-  #  self.__save_as_dialog.set_current_name(Glob.OUTPUT_FILE_DEFAULT)
-  #  result = self.__save_as_dialog.run()
-  #  self.__save_as_dialog.hide()
-  #  if (result == Gtk.ResponseType.OK):
-  #    self.__config.set_work_dir(self.__save_as_dialog.get_current_folder())
-  #    full_name = self.__save_as_dialog.get_filename()
-  #    self.__compile_song(False)
-  #    self.__song.write_to_mma_file(full_name)
-  #    self.__output_file = full_name
-  #    return True
-  #  else:
+    if (self.__save_as_dialog.get_current_folder() <> self.__config.get_work_dir()):
+      self.__save_as_dialog.set_current_folder(self.__config.get_work_dir())
+    self.__save_as_dialog.set_current_name(Glob.OUTPUT_FILE_DEFAULT)
+    result = self.__save_as_dialog.run()
+    self.__save_as_dialog.hide()
+    if (result == Gtk.ResponseType.OK):
+      self.__config.set_work_dir(self.__save_as_dialog.get_current_folder())
+      full_name = self.__save_as_dialog.get_filename()
+      self.__compile_song(False)
+      self.__song.write_to_mma_file(full_name)
+      self.__output_file = full_name
+      return True
+    else:
       return False
 
   def __do_application_end(self):
-    #if self.__handle_unsaved_changes():
+    if self.__handle_unsaved_changes():
       # stop the jack thread when exiting
-    #  if self.__midi_player:
-    #    self.__midi_player.shutdown()
-    #    self.__config.save_config()
-      Gtk.main_quit()
+      #if self.__midi_player:
+        #self.__midi_player.shutdown()
+      self.__config.save_config()
+    Gtk.main_quit()
 
   def __set_song_bar_count(self, bar_count):
     #self.__spinbutton1.set_text(str(bar_count))
