@@ -51,6 +51,8 @@ class Gui():
       </menu>
     </menubar>
     <toolbar name="Toolbar">
+      <toolitem action="New"/>
+      <toolitem action="Open"/>
       <toolitem action="Save"/>
       <toolitem action="Quit"/>
       <separator/>
@@ -70,6 +72,7 @@ class Gui():
     self.__mma_filter.set_name(_("MMA files"))
     self.__mma_filter.add_pattern("*.mma")
     self.__open_file_dialog.add_filter(self.__mma_filter)
+    self.__save_as_dialog = Gtk.FileChooserDialog(_('Save the song as'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -127,8 +130,8 @@ class Gui():
     
   def new_file_callback(self, menuitem):
     """ New. Signal handler for activate in GtkAction 'imagemenuitem1' stock-id=gtk-new """
-    #if self.__handle_unsaved_changes():
-      #self.__do_new_file()
+    if self.__handle_unsaved_changes():
+      self.__do_new_file()
       
   def open_file_callback(self, menuitem):
     """ Open. Signal handler for activate in GtkAction 'imagemenuitem2' stock-id= gtk-open """
