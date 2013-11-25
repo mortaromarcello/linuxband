@@ -8,7 +8,7 @@ import logging
 import gettext
 import locale
 PKG_DATA_DIR = os.getcwd() + "/../../"
-PKG_LIB_DIR = os.getcwd() + "/" + "target"
+PKG_LIB_DIR = os.getcwd() + "/lib"
 sys.path.insert(0, PKG_DATA_DIR)
 from linuxband.glob import Glob
 from linuxband.logger import Logger
@@ -71,6 +71,8 @@ class Gui():
     self.__config.load_config()
     self.__song = Song(MidiGenerator(self.__config))
     self.__midi_player = MidiPlayer(self)
+    if (self.__config.get_jack_connect_startup()):
+      self.__midi_player.startup()
     self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
     self.__open_file_dialog = Gtk.FileChooserDialog(_('Open MMA file'), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
     self.__mma_filter = Gtk.FileFilter()
@@ -93,7 +95,7 @@ class Gui():
     vbox = Gtk.VBox()
     #hbox = Gtk.HBox()
     win.add(vbox)
-    self.__chord_sheet = self.ChordSheet(self.__song,self.__config)
+    self.__chord_sheet = self.ChordSheet(self.__song, self.__config)
     self.uimanager = Gtk.UIManager()
     accelgroup = self.uimanager.get_accel_group()
     win.add_accel_group(accelgroup)
@@ -117,7 +119,7 @@ class Gui():
     actiongroup.get_action('Quit').set_property('short-label', _('_Quit'))
     actiongroup.add_radio_actions([('Chordsheet', None, _('C_hordsheet'), '<Control>h', _('Chordsheet'), 0),
                                   ('MMA', None, _('MMA source'), '<Control>m', _('MMA source'), 1), ], 0, self.switch_view_callback)
-    actiongroup.add_toggle_actions([('Play', Gtk.STOCK_MEDIA_PLAY, None, None, _('Play song [Space]. If Ctrl key is held down, will play from current bar. If Shift is held down, will play selected bars. If Ctrl+Shift is held down, only compiles the song and reports errors if any'), self.playback_start_callback),
+    actiongroup.add_toggle_actions([('Play', Gtk.STOCK_MEDIA_PLAY, None, None, _('Play song [Space]. If Ctrl key is held down, will play from current bar. If Shift is held down, will play selected bars. If Ctrl+Shift is held down, only compiles the song and reports errors if any')),
                               ('Stop', Gtk.STOCK_MEDIA_STOP, None, None, _('Stop playback [Space]'), self.playback_stop_callback),
                               ('Pause', Gtk.STOCK_MEDIA_PAUSE, None, None, _('Pause playback'),  self.playback_pause_callback)])
     self.uimanager.insert_action_group(actiongroup, 0)
@@ -126,6 +128,7 @@ class Gui():
     vbox.pack_start(menubar, False, False, 0)
     toolbar = self.uimanager.get_widget('/Toolbar')
     self.uimanager.get_widget('/MenuBar/Help').set_right_justified( True)
+    self.uimanager.get_widget('/Toolbar/Play').get_children()[0].connect('button-press-event', self.playback_start)
     vbox.pack_start(toolbar, False, False, 0)
     notebook = Gtk.Notebook()
     vbox_notebook = Gtk.VBox()
@@ -133,29 +136,42 @@ class Gui():
     notebook.append_page(vbox_notebook, None)
     vbox.pack_start(notebook, True, True, 0)
 
-  def playback_start_callback(self, button=None):
+  def move_playhead_to_bar(self, barNum):
+    """ Called by MidiPlayer. """
+    self.__chord_sheet.move_playhead_to(barNum)
+
+  def move_playhead_to_line(self, lineNum):
+    """ Called by MidiPlayer. """
+    #self.__source_editor.move_playhead_to(lineNum)
+
+  def hide_playhead(self):
+    """ Called by MidiPlayer. """
+    self.__chord_sheet.move_playhead_to(-1)
+    #self.__source_editor.move_playhead_to(-1)
+
+  def playback_start(self, button, event):
     """ Play. """
-    #if event.state & gtk.gdk.SHIFT_MASK and event.state & gtk.gdk.CONTROL_MASK:
-      #self.__compile_song(True)
-    #else:
-    player = self.__midi_player
-    #res = self.__compile_song(True)
-    #if res == 0:
-      #res, midi_data = self.__song.get_playback_midi_data()
-      #player.playback_stop()
-      #if res != 0: # generate SMF failed
-        #if res > 0 or res == -1: self.__show_mma_error(res)
-        #return
-      #player.load_smf_data(midi_data, self.__song.get_data().get_mma_line_offset())
-    #else:
-      #return
-    self.__enable_pause_button();
-    #if event.state & gtk.gdk.CONTROL_MASK:
-      #player.playback_start_bar(self.__chord_sheet.get_current_bar_number())
-    #elif event.state & gtk.gdk.SHIFT_MASK:
-      #player.playback_start_bars(self.__chord_sheet.get_selection_limits())
-    #else:
-    player.playback_start()
+    if event.get_state() & Gdk.ModifierType.SHIFT_MASK and event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+      self.__compile_song(True)
+    else:
+      player = self.__midi_player
+      res = self.__compile_song(True)
+      if res == 0:
+        res, midi_data = self.__song.get_playback_midi_data()
+        player.playback_stop()
+        if res != 0: # generate SMF failed
+            if res > 0 or res == -1: self.__show_mma_error(res)
+            return
+        player.load_smf_data(midi_data, self.__song.get_data().get_mma_line_offset())
+      else:
+        return
+      self.__enable_pause_button();
+      if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+        player.playback_start_bar(self.__chord_sheet.get_current_bar_number())
+      elif event.get_state() & Gdk.ModifierType.SHIFT_MASK:
+        player.playback_start_bars(self.__chord_sheet.get_selection_limits())
+      else:
+        player.playback_start()
 
   def playback_stop_callback(self, button=None):
     """ Stop. """
@@ -234,7 +250,7 @@ class Gui():
 
   def __do_open_file(self):
     """ """
-    #self.playback_stop_callback()
+    self.playback_stop_callback()
     self.__song.load_from_file(self.__input_file)
     res = self.__song.compile_song()
     self.__chord_sheet.new_song_loaded()
@@ -290,9 +306,9 @@ class Gui():
   def __do_application_end(self):
     if self.__handle_unsaved_changes():
       # stop the jack thread when exiting
-      #if self.__midi_player:
-        #self.__midi_player.shutdown()
       self.__config.save_config()
+    if self.__midi_player:
+        self.__midi_player.shutdown()
     Gtk.main_quit()
 
   def __set_song_bar_count(self, bar_count):
@@ -304,7 +320,8 @@ class Gui():
     res = self.__song.compile_song()
     if show_error:
       if res == 0:
-        self.__source_editor.put_error_mark_to(-1)
+        """"""
+        #self.__source_editor.put_error_mark_to(-1)
       elif res > 0 or res == -1:
         self.__show_mma_error(res)
     return res
@@ -345,12 +362,20 @@ class Gui():
       self.__bar_width = self.__drawing_area_width / self.__song.get_data().get_beats_per_bar()
       self.__bar_chords_width = self.__bar_width * 9 / 10
       self.__bar_info_width = self.__bar_width - self.__bar_chords_width
-      self.double_buffer = None
+      self.surface = None
       self.connect("draw", self.on_draw)
       self.connect("realize", self.on_realize)
       self.connect("configure-event", self.on_configure)
       self.connect("key-press-event", self.on_key_press)
       self.connect("motion-notify-event", self.on_motion_notify)
+
+    def move_playhead_to(self, pos):
+      new_pos = pos * 2 + 1 if pos > -1 else -1
+      old_pos = self.__playhead_pos
+      if  old_pos != new_pos:
+        self.__playhead_pos = new_pos
+        self.__render_field(old_pos)
+        self.__render_field(new_pos)
 
     def set_song_bar_count(self, bar_count):
         new_end = bar_count * 2
@@ -371,13 +396,13 @@ class Gui():
       self.__destroy_selection()
 
     def on_draw(self, widget, cr):
-      cr.set_source_surface(self.double_buffer, 0.0, 0.0)
+      cr.set_source_surface(self.surface, 0.0, 0.0)
       cr.paint()
       logging.debug('on_draw')
       return False
 
     def on_realize(self, widget):
-      db = self.double_buffer
+      db = self.surface
       if db is not None:
         cc = cairo.Context(db)
         color = Gdk.color_parse(Gui.ChordSheet.__color_no_song)
@@ -388,22 +413,15 @@ class Gui():
         cc.fill()
         db.flush()
       else:
-        logging.debug('Invalid double buffer')
+        logging.debug('Invalid surface')
       logging.debug("on_realize")
       return True
 
-    def on_expose(self, widget, event):
-      logging.debug("on_expose")
-      return False
-  
     def on_configure(self, widget, event, data=None):
-      """Configure the double buffer based on size of the widget"""
-      # Destroy previous buffer
-      if self.double_buffer is not None:
-        self.double_buffer.finish()
-        self.double_buffer = None
-      # Create a new buffer
-      self.double_buffer = cairo.ImageSurface(cairo.FORMAT_ARGB32, widget.get_allocated_width(), widget.get_allocated_height())
+      """Configure the surface based on size of the widget"""
+      if self.surface == None:
+        allocation = widget.get_allocation()
+        self.surface = widget.get_window().create_similar_surface(cairo.CONTENT_COLOR, allocation.width, allocation.height)
       print widget.get_allocated_width()
       print widget.get_allocated_height()
       logging.debug("on_configure")
@@ -458,15 +476,18 @@ class Gui():
 
     def on_motion_notify(self, widget, event):
       """ """
+      if self.surface == None:
+        return False
+      (window, x, y, state)= event.window.get_pointer()
       # selection by mouse
-      if event.get_state() & Gdk.EventMask.BUTTON1_MOTION_MASK:
-        pos = self.__locate_mouse_click(event.x, event.y)
+      if state & Gdk.ModifierType.BUTTON1_MASK:
+        pos = self.__locate_mouse_click(x, y)
         old_pos = self.__cursor_pos
         if not pos == old_pos:
           self.__move_cursor_to(pos)
           self.__adjust_selection(old_pos)
       logging.debug('on_motion_notify')
-      return False
+      return True
 
     def __render_field(self, field_num, chords=None):
       cursor = self.__cursor_pos == field_num
@@ -499,7 +520,7 @@ class Gui():
         color_code = Gui.ChordSheet.__color_cursor
       else:
         color_code = Gui.ChordSheet.__color_song
-      db = self.double_buffer
+      db = self.surface
       if db is not None:
         color = Gdk.color_parse(color_code)
         cc = cairo.Context(db)
@@ -543,7 +564,7 @@ class Gui():
                           playhead)
           i = i + 1
       else:
-        logging.debug('Invalid double buffer')
+        logging.debug('Invalid surface')
 
     def __get_pos_x(self, pos):
       return (pos / 2 % Gui.ChordSheet.__bars_per_line) * self.__bar_width \
@@ -565,7 +586,7 @@ class Gui():
         color_code = Gui.ChordSheet.__color_events
       else:
         color_code = Gui.ChordSheet.__color_song
-      db = self.double_buffer
+      db = self.surface
       if db is not None:
         cc = cairo.Context(db)
         color = Gdk.color_parse(color_code)
@@ -595,11 +616,11 @@ class Gui():
             PangoCairo.show_layout(cc, pango_layout)
         db.flush()
       else:
-        logging.debug('Invalid double buffer')
+        logging.debug('Invalid surface')
 
     def __render_chord_xy(self, chord, x, y, width, height, playhead):
       """ Render one chord on position x,y. """
-      db = self.double_buffer
+      db = self.surface
       if db is not None:
         cc = cairo.Context(db)
         if playhead: color = Gdk.color_parse('white')
@@ -622,10 +643,10 @@ class Gui():
         PangoCairo.show_layout(cc, pango_layout)
         db.flush()
       else:
-        logging.debug('Invalid double buffer')
+        logging.debug('Invalid surface')
 
     def __draw_repetition(self, x, y, end):
-      db = self.double_buffer
+      db = self.surface
       if db is not None:
         cc = cairo.Context(db)
         # draw line
@@ -641,14 +662,12 @@ class Gui():
         lower_y = y + Gui.ChordSheet.__bar_height * 3 / 4 - point_size
         if end: x = x + self.__bar_info_width / 5
         else: x = x + self.__bar_info_width * 4 / 5 - point_size
-        #cc.arc(x, upper_y, point_size, point_size, 360 * 64)
-        #cc.arc(x, lower_y, point_size, point_size, 360 * 64)
         cc.arc(x, upper_y, point_size, 0, 360 * 64)
         cc.arc(x, lower_y, point_size, 0, 360 * 64)
         cc.fill()
         db.flush()
       else:
-        logging.debug('Invalid double buffer')
+        logging.debug('Invalid surface')
 
     def __move_cursor_to(self, new_pos):
       old_pos = self.__cursor_pos
@@ -658,8 +677,8 @@ class Gui():
         new_song_bar_count = new_pos / 2 + new_pos % 2
         self.__gui.change_song_bar_count(new_song_bar_count)
       self.__render_field(new_pos)
-#      self.__gui.switch_bar(self.is_cursor_on_bar_chords())
-#      self.__refresh_entries_and_events()
+      #self.__gui.switch_bar(self.is_cursor_on_bar_chords())
+      #self.__refresh_entries_and_events()
   
     def __adjust_selection_bar_count_changed(self):
       """ Number of bars has changed, maybe destroy the selection or shorten it. """
@@ -677,6 +696,26 @@ class Gui():
       self.__selection_start = None
       self.__selection = set([])
       self.__redraw_selection(old_selection)
+      
+    def __locate_mouse_click(self, x, y):
+      bar_x = 0
+      bar_chords = 0
+      u = self.__bar_info_width
+      while x > u:
+        if bar_chords == 0:
+          u = u + self.__bar_chords_width
+          bar_chords = 1
+        else:
+          u = u + self.__bar_info_width
+          bar_x = bar_x + 1
+          bar_chords = 0
+      bar_y = 0
+      u = Gui.ChordSheet.__bar_height
+      while y > u:
+        u = u + ChordSheet.__bar_height
+        bar_y = bar_y + 1
+      pos = self.__song.get_data().get_beats_per_bar() * 2 * bar_y + bar_x * 2 + bar_chords
+      return pos
 
 def main():
   GObject.threads_init()
@@ -690,11 +729,12 @@ def main():
   Glob.DEFAULT_CONFIG_FILE = "%s/../config/linuxband.rc" % PKG_DATA_DIR
   #Glob.GLADE = "%s/../glade/gui.ui" % PKG_DATA_DIR
   #Glob.LICENSE = "%s/../../../COPYING" % PKG_DATA_DIR
-  #Glob.PLAYER_PROGRAM = "%s/linuxband-player" % PKG_LIB_DIR
+  Glob.PLAYER_PROGRAM = "%s/linuxband-player" % PKG_LIB_DIR
   # initialize logging
   console_log_level = logging.DEBUG
   Logger.initLogging(console_log_level)
   logging.debug("%s %s" % (PACKAGE_NAME, PACKAGE_VERSION))
+  logging.debug("%s" % Glob.PLAYER_PROGRAM)
   app = Gui()
   Gtk.main()
   
