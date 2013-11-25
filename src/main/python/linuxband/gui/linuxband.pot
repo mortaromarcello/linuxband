@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-24 09:46+0100\n"
+"POT-Creation-Date: 2013-11-25 17:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,66 +17,126 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: gui.py:48
+#: gui.py:70
+msgid "Open MMA file"
+msgstr ""
+
+#: gui.py:72
+msgid "MMA files"
+msgstr ""
+
+#: gui.py:75
+msgid "Any file"
+msgstr ""
+
+#: gui.py:79
+msgid "Save the song as"
+msgstr ""
+
+#: gui.py:96
 msgid "_Quit me!"
 msgstr ""
 
-#: gui.py:48
+#: gui.py:96
 msgid "Quit the Program"
 msgstr ""
 
-#: gui.py:49
+#: gui.py:97
 msgid "_New"
 msgstr ""
 
-#: gui.py:49
+#: gui.py:97
 msgid "New file"
 msgstr ""
 
-#: gui.py:50
+#: gui.py:98
 msgid "_Open"
 msgstr ""
 
-#: gui.py:50
+#: gui.py:98
 msgid "Open file"
 msgstr ""
 
-#: gui.py:51
+#: gui.py:99
 msgid "_Recent songs"
 msgstr ""
 
-#: gui.py:51
+#: gui.py:99
 msgid "Recent songs"
 msgstr ""
 
-#: gui.py:52
+#: gui.py:100
 msgid "_Save"
 msgstr ""
 
-#: gui.py:52
+#: gui.py:100
 msgid "Save file"
 msgstr ""
 
-#: gui.py:53
+#: gui.py:101
 msgid "Save _as"
 msgstr ""
 
-#: gui.py:53
+#: gui.py:101
 msgid "Save as"
 msgstr ""
 
-#: gui.py:54
+#: gui.py:102
 msgid "Export midi"
 msgstr ""
 
-#: gui.py:54
+#: gui.py:102
 msgid "Export to midi file"
 msgstr ""
 
-#: gui.py:55
+#: gui.py:103
+msgid "Cut"
+msgstr ""
+
+#: gui.py:104
+msgid "Copy"
+msgstr ""
+
+#: gui.py:105
+msgid "Paste"
+msgstr ""
+
+#: gui.py:106
+msgid "Delete"
+msgstr ""
+
+#: gui.py:107
+msgid "Select all"
+msgstr ""
+
+#: gui.py:108
 msgid "_File"
 msgstr ""
 
-#: gui.py:56
+#: gui.py:109
+msgid "Edit"
+msgstr ""
+
+#: gui.py:110
+msgid "_View"
+msgstr ""
+
+#: gui.py:111
+msgid "_Help"
+msgstr ""
+
+#: gui.py:112
 msgid "_Quit"
+msgstr ""
+
+#: gui.py:113
+msgid "C_hordsheet"
+msgstr ""
+
+#: gui.py:113
+msgid "Chordsheet"
+msgstr ""
+
+#: gui.py:114
+msgid "MMA source"
 msgstr ""

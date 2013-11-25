@@ -15,6 +15,7 @@ from linuxband.logger import Logger
 from linuxband.config import Config
 from linuxband.mma.song import Song
 from linuxband.midi.mma2smf import MidiGenerator
+from linuxband.midi.midi_player import MidiPlayer
 LOCAL_DIR = 'locale'
 PACKAGE_NAME = "linuxband"
 PACKAGE_VERSION = "12.02.1"
@@ -56,6 +57,9 @@ class Gui():
       <toolitem action="Save"/>
       <toolitem action="Quit"/>
       <separator/>
+      <toolitem action="Play"/>
+      <toolitem action="Stop"/>
+      <toolitem action="Pause"/>
     </toolbar>
   </ui>
   '''
@@ -66,6 +70,7 @@ class Gui():
     self.__config = Config()
     self.__config.load_config()
     self.__song = Song(MidiGenerator(self.__config))
+    self.__midi_player = MidiPlayer(self)
     self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
     self.__open_file_dialog = Gtk.FileChooserDialog(_('Open MMA file'), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
     self.__mma_filter = Gtk.FileFilter()
@@ -89,8 +94,8 @@ class Gui():
     #hbox = Gtk.HBox()
     win.add(vbox)
     self.__chord_sheet = self.ChordSheet(self.__song,self.__config)
-    uimanager = Gtk.UIManager()
-    accelgroup = uimanager.get_accel_group()
+    self.uimanager = Gtk.UIManager()
+    accelgroup = self.uimanager.get_accel_group()
     win.add_accel_group(accelgroup)
     actiongroup = Gtk.ActionGroup('Linuxband')
     actiongroup.add_actions([('Quit', Gtk.STOCK_QUIT, _('_Quit me!'), None, _('Quit the Program'), self.application_end_event_callback),
@@ -112,19 +117,59 @@ class Gui():
     actiongroup.get_action('Quit').set_property('short-label', _('_Quit'))
     actiongroup.add_radio_actions([('Chordsheet', None, _('C_hordsheet'), '<Control>h', _('Chordsheet'), 0),
                                   ('MMA', None, _('MMA source'), '<Control>m', _('MMA source'), 1), ], 0, self.switch_view_callback)
-    uimanager.insert_action_group(actiongroup, 0)
-    uimanager.add_ui_from_string(self.ui)
-    menubar = uimanager.get_widget('/MenuBar')
+    actiongroup.add_toggle_actions([('Play', Gtk.STOCK_MEDIA_PLAY, None, None, _('Play song [Space]. If Ctrl key is held down, will play from current bar. If Shift is held down, will play selected bars. If Ctrl+Shift is held down, only compiles the song and reports errors if any'), self.playback_start_callback),
+                              ('Stop', Gtk.STOCK_MEDIA_STOP, None, None, _('Stop playback [Space]'), self.playback_stop_callback),
+                              ('Pause', Gtk.STOCK_MEDIA_PAUSE, None, None, _('Pause playback'),  self.playback_pause_callback)])
+    self.uimanager.insert_action_group(actiongroup, 0)
+    self.uimanager.add_ui_from_string(self.ui)
+    menubar = self.uimanager.get_widget('/MenuBar')
     vbox.pack_start(menubar, False, False, 0)
-    toolbar = uimanager.get_widget('/Toolbar')
-    uimanager.get_widget('/MenuBar/Help').set_right_justified( True)
+    toolbar = self.uimanager.get_widget('/Toolbar')
+    self.uimanager.get_widget('/MenuBar/Help').set_right_justified( True)
     vbox.pack_start(toolbar, False, False, 0)
     notebook = Gtk.Notebook()
     vbox_notebook = Gtk.VBox()
     vbox_notebook.pack_start(self.__chord_sheet, True, True, 0)
     notebook.append_page(vbox_notebook, None)
     vbox.pack_start(notebook, True, True, 0)
-    
+
+  def playback_start_callback(self, button=None):
+    """ Play. """
+    #if event.state & gtk.gdk.SHIFT_MASK and event.state & gtk.gdk.CONTROL_MASK:
+      #self.__compile_song(True)
+    #else:
+    player = self.__midi_player
+    #res = self.__compile_song(True)
+    #if res == 0:
+      #res, midi_data = self.__song.get_playback_midi_data()
+      #player.playback_stop()
+      #if res != 0: # generate SMF failed
+        #if res > 0 or res == -1: self.__show_mma_error(res)
+        #return
+      #player.load_smf_data(midi_data, self.__song.get_data().get_mma_line_offset())
+    #else:
+      #return
+    self.__enable_pause_button();
+    #if event.state & gtk.gdk.CONTROL_MASK:
+      #player.playback_start_bar(self.__chord_sheet.get_current_bar_number())
+    #elif event.state & gtk.gdk.SHIFT_MASK:
+      #player.playback_start_bars(self.__chord_sheet.get_selection_limits())
+    #else:
+    player.playback_start()
+
+  def playback_stop_callback(self, button=None):
+    """ Stop. """
+    self.__enable_pause_button();
+    self.__midi_player.playback_stop()
+
+  __ignore_toggle = False
+  def playback_pause_callback(self, button=None):
+    """ Pause. """
+    if Gui.__ignore_toggle:
+      Gui.__ignore_toggle = False
+    else:
+      self.__midi_player.set_pause(button.get_active());
+
   def refresh_chord_sheet(self):
     """ Refresh chord sheet """
     self.__set_song_bar_count(self.__song.get_data().get_bar_count())
@@ -181,7 +226,7 @@ class Gui():
     #    self.__song.write_to_midi_file(full_name)
     #else:
     #  logging.error("Failed to compile MMA file. Fix the errors and try the export again.")
-
+    
   def __do_new_file(self):
     self.__output_file = None
     self.__input_file = self.__config.getTemplateFile()
@@ -253,6 +298,23 @@ class Gui():
   def __set_song_bar_count(self, bar_count):
     #self.__spinbutton1.set_text(str(bar_count))
     self.__chord_sheet.set_song_bar_count(bar_count)
+
+  def __compile_song(self, show_error):
+    logging.debug("COMPILE_SONG")
+    res = self.__song.compile_song()
+    if show_error:
+      if res == 0:
+        self.__source_editor.put_error_mark_to(-1)
+      elif res > 0 or res == -1:
+        self.__show_mma_error(res)
+    return res
+
+  def __enable_pause_button(self):
+    if self.uimanager.get_widget('/Toolbar/Pause').get_active():
+    #if self.__toolbutton3.get_active():
+      Gui.__ignore_toggle = True
+      #self.__toolbutton3.set_active(False)
+      self.uimanager.get_widget('/Toolbar/Pause').set_active(False)
 
   class ChordSheet(Gtk.DrawingArea):
     __bar_height = 40

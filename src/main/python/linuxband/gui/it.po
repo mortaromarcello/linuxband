@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtk 3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-24 09:46+0100\n"
-"PO-Revision-Date: 2013-11-24 11:30+0100\n"
+"POT-Creation-Date: 2013-11-25 17:30+0100\n"
+"PO-Revision-Date: 2013-11-25 18:03+0100\n"
 "Last-Translator: Marcello Mortaro <mortaromarcello@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -17,67 +17,130 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: gui.py:48
+#: gui.py:70
+#, fuzzy
+msgid "Open MMA file"
+msgstr "Apri il file"
+
+#: gui.py:72
+msgid "MMA files"
+msgstr "Files MMA"
+
+#: gui.py:75
+#, fuzzy
+msgid "Any file"
+msgstr "Apri il file"
+
+#: gui.py:79
+#, fuzzy
+msgid "Save the song as"
+msgstr "Salva come"
+
+#: gui.py:96
 msgid "_Quit me!"
 msgstr "_Esci"
 
-#: gui.py:48
+#: gui.py:96
 msgid "Quit the Program"
 msgstr "Esci dal programma"
 
-#: gui.py:49
+#: gui.py:97
 msgid "_New"
 msgstr "Nuovo"
 
-#: gui.py:49
+#: gui.py:97
 msgid "New file"
 msgstr "Nuovo file"
 
-#: gui.py:50
+#: gui.py:98
 msgid "_Open"
 msgstr "Apri"
 
-#: gui.py:50
+#: gui.py:98
 msgid "Open file"
 msgstr "Apri il file"
 
-#: gui.py:51
+#: gui.py:99
 msgid "_Recent songs"
 msgstr "Canzoni recenti"
 
-#: gui.py:51
+#: gui.py:99
 msgid "Recent songs"
 msgstr "Canzoni recenti"
 
-#: gui.py:52
+#: gui.py:100
 msgid "_Save"
 msgstr "Salva"
 
-#: gui.py:52
+#: gui.py:100
 msgid "Save file"
 msgstr "Salva il file"
 
-#: gui.py:53
+#: gui.py:101
 msgid "Save _as"
 msgstr "Salva _come"
 
-#: gui.py:53
+#: gui.py:101
 msgid "Save as"
 msgstr "Salva come"
 
-#: gui.py:54
+#: gui.py:102
 msgid "Export midi"
 msgstr "Esporta midi"
 
-#: gui.py:54
+#: gui.py:102
 msgid "Export to midi file"
 msgstr "Esporta in midi file"
 
-#: gui.py:55
+#: gui.py:103
+msgid "Cut"
+msgstr "Taglia"
+
+#: gui.py:104
+msgid "Copy"
+msgstr "Copia"
+
+#: gui.py:105
+msgid "Paste"
+msgstr "Incolla"
+
+#: gui.py:106
+msgid "Delete"
+msgstr "Cancella"
+
+#: gui.py:107
+msgid "Select all"
+msgstr "Seleziona tutto"
+
+#: gui.py:108
 msgid "_File"
 msgstr "_File"
 
-#: gui.py:56
+#: gui.py:109
+msgid "Edit"
+msgstr "Modifica"
+
+#: gui.py:110
+msgid "_View"
+msgstr "Visualizza"
+
+#: gui.py:111
+msgid "_Help"
+msgstr "Aiuto"
+
+#: gui.py:112
 msgid "_Quit"
 msgstr "_Esci"
+
+#: gui.py:113
+msgid "C_hordsheet"
+msgstr "Partitura"
+
+#: gui.py:113
+msgid "Chordsheet"
+msgstr "Partitura"
+
+#: gui.py:114
+msgid "MMA source"
+msgstr "Sorgente MMA"
 
