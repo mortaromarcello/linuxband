@@ -74,35 +74,7 @@ class Gui():
     self.__midi_player = MidiPlayer(self)
     if (self.__config.get_jack_connect_startup()):
       self.__midi_player.startup()
-    self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
-    self.__open_file_dialog = Gtk.FileChooserDialog(_('Open MMA file'), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
-    self.__mma_filter = Gtk.FileFilter()
-    self.__mma_filter.set_name(_("MMA files"))
-    self.__mma_filter.add_pattern("*.mma")
-    self.__any_filter = Gtk.FileFilter()
-    self.__any_filter.set_name(_("Any file"))
-    self.__any_filter.add_pattern("*")
-    self.__open_file_dialog.add_filter(self.__mma_filter)
-    self.__open_file_dialog.add_filter(self.__any_filter)
-    self.__save_as_dialog = Gtk.FileChooserDialog(_('Save the song as'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
-    self.__save_as_dialog.add_filter(self.__mma_filter)
-    self.__save_as_dialog.add_filter(self.__any_filter)
-    self.__about_dialog = Gtk.AboutDialog()
-    self.__about_dialog.set_program_name(Glob.PACKAGE_TITLE)
-    self.__about_dialog.set_version(Glob.PACKAGE_VERSION)
-    self.__about_dialog.set_copyright(Glob.PACKAGE_COPYRIGHT + ', ' + Glob.PACKAGE_BUGREPORT)
-    self.__about_dialog.set_website(Glob.PACKAGE_URL)
-    fname = Glob.LICENSE
-    license_text = ''
-    try:
-      infile = file(fname, 'r')
-      try:
-        license_text = infile.read()
-      finally:
-        infile.close()
-    except:
-      logging.exception("Unable to read license file '" + fname + "'")
-    self.__about_dialog.set_license(license_text)
+    self.__init_dialogs()
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -129,7 +101,7 @@ class Gui():
                               ('Paste', Gtk.STOCK_PASTE, _('Paste'), None),
                               ('Delete', Gtk.STOCK_DELETE, _('Delete'), None),
                               ('Select-all', Gtk.STOCK_SELECT_ALL, _('Select all'), None),
-                              ('About', Gtk.STOCK_ABOUT, _('_About'), None, _('About'), None, self.help_about_callback),
+                              ('About', Gtk.STOCK_ABOUT, _('_About'), None, _('About'), self.help_about_callback),
                               ('File', None, _('_File')),
                               ('Edit', None, _('Edit')),
                               ('View', None, _('_View')),
@@ -361,8 +333,49 @@ class Gui():
       Gui.__ignore_toggle = True
       #self.__toolbutton3.set_active(False)
       self.uimanager.get_widget('/Toolbar/Pause').set_active(False)
+      
+  def __init_dialogs(self):
+    self.__save_changes_dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+    self.__open_file_dialog = Gtk.FileChooserDialog(_('Open MMA file'), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+    self.__mma_filter = Gtk.FileFilter()
+    self.__mma_filter.set_name(_("MMA files"))
+    self.__mma_filter.add_pattern("*.mma")
+    self.__any_filter = Gtk.FileFilter()
+    self.__any_filter.set_name(_("Any file"))
+    self.__any_filter.add_pattern("*")
+    self.__open_file_dialog.add_filter(self.__mma_filter)
+    self.__open_file_dialog.add_filter(self.__any_filter)
+    self.__save_as_dialog = Gtk.FileChooserDialog(_('Save the song as'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+    self.__save_as_dialog.add_filter(self.__mma_filter)
+    self.__save_as_dialog.add_filter(self.__any_filter)
+    self.__export_midi_dialog = Gtk.FileChooserDialog(_('Save as MIDI'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+    self.__midi_filter = Gtk.FileFilter()
+    self.__midi_filter.set_name(_("Midi files"))
+    self.__midi_filter.add_pattern("*.mid")
+    self.__export_midi_dialog.add_filter(self.__midi_filter)
+    self.__about_dialog = Gtk.AboutDialog()
+    self.__about_dialog.set_program_name(Glob.PACKAGE_TITLE)
+    self.__about_dialog.set_version(Glob.PACKAGE_VERSION)
+    self.__about_dialog.set_copyright(Glob.PACKAGE_COPYRIGHT + ', ' + Glob.PACKAGE_BUGREPORT)
+    self.__about_dialog.set_website(Glob.PACKAGE_URL)
+    fname = Glob.LICENSE
+    license_text = ''
+    try:
+      infile = file(fname, 'r')
+      try:
+        license_text = infile.read()
+      finally:
+        infile.close()
+    except:
+      logging.exception("Unable to read license file '" + fname + "'")
+    self.__about_dialog.set_license(license_text)
+    self.__about_dialog.connect('delete-event', self.about_dialog_delete_event_callback)
+    self.__about_dialog.connect('response', self.about_dialog_response_callback)
 
   class ChordSheet(Gtk.DrawingArea):
+    """
+    Class ChordSheet
+    """
     __bar_height = 40
     __cell_padding = 2
     __max_bar_chords_font = 40
