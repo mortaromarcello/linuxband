@@ -7,7 +7,7 @@ import math
 import logging
 import gettext
 import locale
-PKG_DATA_DIR = os.getcwd() + "/../../"
+PKG_DATA_DIR = os.getcwd() + "/../.."
 PKG_LIB_DIR = os.getcwd() + "/lib"
 sys.path.insert(0, PKG_DATA_DIR)
 from linuxband.glob import Glob
@@ -49,6 +49,7 @@ class Gui():
         <menuitem action="MMA"/>
       </menu>
       <menu action="Help">
+        <menuitem action="About"/>
       </menu>
     </menubar>
     <toolbar name="Toolbar">
@@ -86,6 +87,22 @@ class Gui():
     self.__save_as_dialog = Gtk.FileChooserDialog(_('Save the song as'), None, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
     self.__save_as_dialog.add_filter(self.__mma_filter)
     self.__save_as_dialog.add_filter(self.__any_filter)
+    self.__about_dialog = Gtk.AboutDialog()
+    self.__about_dialog.set_program_name(Glob.PACKAGE_TITLE)
+    self.__about_dialog.set_version(Glob.PACKAGE_VERSION)
+    self.__about_dialog.set_copyright(Glob.PACKAGE_COPYRIGHT + ', ' + Glob.PACKAGE_BUGREPORT)
+    self.__about_dialog.set_website(Glob.PACKAGE_URL)
+    fname = Glob.LICENSE
+    license_text = ''
+    try:
+      infile = file(fname, 'r')
+      try:
+        license_text = infile.read()
+      finally:
+        infile.close()
+    except:
+      logging.exception("Unable to read license file '" + fname + "'")
+    self.__about_dialog.set_license(license_text)
     self.init_gui(win)
     win.show_all()
     self.__do_new_file()
@@ -112,6 +129,7 @@ class Gui():
                               ('Paste', Gtk.STOCK_PASTE, _('Paste'), None),
                               ('Delete', Gtk.STOCK_DELETE, _('Delete'), None),
                               ('Select-all', Gtk.STOCK_SELECT_ALL, _('Select all'), None),
+                              ('About', Gtk.STOCK_ABOUT, _('_About'), None, _('About'), None, self.help_about_callback),
                               ('File', None, _('_File')),
                               ('Edit', None, _('Edit')),
                               ('View', None, _('_View')),
@@ -172,6 +190,17 @@ class Gui():
         player.playback_start_bars(self.__chord_sheet.get_selection_limits())
       else:
         player.playback_start()
+
+  def help_about_callback(self, menuitem):
+    self.__about_dialog.present()
+
+  def about_dialog_response_callback(self, dialog, response):
+    self.__about_dialog.hide()
+    return True
+
+  def about_dialog_delete_event_callback(self, dialog, event):
+    self.__about_dialog.hide()
+    return True
 
   def playback_stop_callback(self, button=None):
     """ Stop. """
@@ -724,11 +753,11 @@ def main():
   #Glob.PACKAGE_URL = PACKAGE_URL
   #Glob.PACKAGE_TITLE = PACKAGE_TITLE
   #Glob.PACKAGE_COPYRIGHT = PACKAGE_COPYRIGHT
-  Glob.LINE_MARKER = "%s/../resources/line-pointer.png" % PKG_DATA_DIR
-  Glob.ERROR_MARKER = "%s/../resources/error-pointer.png" % PKG_DATA_DIR
-  Glob.DEFAULT_CONFIG_FILE = "%s/../config/linuxband.rc" % PKG_DATA_DIR
+  Glob.LINE_MARKER = "%s/resources/line-pointer.png" % PKG_DATA_DIR
+  Glob.ERROR_MARKER = "%s/resources/error-pointer.png" % PKG_DATA_DIR
+  Glob.DEFAULT_CONFIG_FILE = "%s/config/linuxband.rc" % PKG_DATA_DIR
   #Glob.GLADE = "%s/../glade/gui.ui" % PKG_DATA_DIR
-  #Glob.LICENSE = "%s/../../../COPYING" % PKG_DATA_DIR
+  Glob.LICENSE = "%s/../../../COPYING" % PKG_DATA_DIR
   Glob.PLAYER_PROGRAM = "%s/linuxband-player" % PKG_LIB_DIR
   # initialize logging
   console_log_level = logging.DEBUG
