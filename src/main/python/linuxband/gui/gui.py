@@ -1,7 +1,7 @@
 #!/usr/env python
 
 import sys, os
-from gi.repository import GObject, Gtk, Gdk, Pango, PangoCairo
+from gi.repository import GObject, Gtk, Gdk, Pango, PangoCairo, GtkSource, GdkPixbuf
 import cairo
 import math
 import logging
@@ -14,6 +14,7 @@ from linuxband.glob import Glob
 from linuxband.logger import Logger
 from linuxband.config import Config
 from linuxband.mma.song import Song
+from linuxband.mma.grooves import Grooves
 from linuxband.midi.mma2smf import MidiGenerator
 from linuxband.midi.midi_player import MidiPlayer
 LOCAL_DIR = 'locale'
@@ -70,13 +71,20 @@ class Gui():
     win.connect("delete-event", Gtk.main_quit)
     self.__config = Config()
     self.__config.load_config()
-    self.__song = Song(MidiGenerator(self.__config))
-    self.__midi_player = MidiPlayer(self)
-    if (self.__config.get_jack_connect_startup()):
-      self.__midi_player.startup()
+    grooves = Grooves(self.__config)
+    grooves.load_grooves(True)
+    self.__song = song = Song(MidiGenerator(self.__config))
+    #self.__events_bar = EventsBar(song, self, grooves)
+    #self.__chord_entries = ChordEntries(song, self.__chord_sheet)
+    self.__source_editor = self.SourceEditor(song)
+    #self.__preferences = Preferences(glade, self, self.__config, grooves)
     self.__init_dialogs()
     self.init_gui(win)
     win.show_all()
+    GObject.threads_init()
+    self.__midi_player = MidiPlayer(self)
+    if (self.__config.get_jack_connect_startup()):
+      self.__midi_player.startup()
     self.__do_new_file()
 
   def init_gui(self, win):
@@ -120,11 +128,15 @@ class Gui():
     self.uimanager.get_widget('/MenuBar/Help').set_right_justified( True)
     self.uimanager.get_widget('/Toolbar/Play').get_children()[0].connect('button-press-event', self.playback_start)
     vbox.pack_start(toolbar, False, False, 0)
-    notebook = Gtk.Notebook()
-    vbox_notebook = Gtk.VBox()
-    vbox_notebook.pack_start(self.__chord_sheet, True, True, 0)
-    notebook.append_page(vbox_notebook, None)
-    vbox.pack_start(notebook, True, True, 0)
+    self.__notebook = Gtk.Notebook()
+    self.__notebook.set_tab_pos(Gtk.PositionType.BOTTOM)
+    vbox_chord = Gtk.VBox()
+    vbox_editor = Gtk.VBox()
+    vbox_chord.pack_start(self.__chord_sheet, True, True, 0)
+    vbox_editor.pack_start(self.__source_editor, True, True, 0)
+    self.__notebook.append_page(vbox_chord, Gtk.Label(_("Chordsheet")))
+    self.__notebook.append_page(vbox_editor, Gtk.Label(_("Source")))
+    vbox.pack_start(self.__notebook, True, True, 0)
 
   def move_playhead_to_bar(self, barNum):
     """ Called by MidiPlayer. """
@@ -132,12 +144,12 @@ class Gui():
 
   def move_playhead_to_line(self, lineNum):
     """ Called by MidiPlayer. """
-    #self.__source_editor.move_playhead_to(lineNum)
+    self.__source_editor.move_playhead_to(lineNum)
 
   def hide_playhead(self):
     """ Called by MidiPlayer. """
     self.__chord_sheet.move_playhead_to(-1)
-    #self.__source_editor.move_playhead_to(-1)
+    self.__source_editor.move_playhead_to(-1)
 
   def playback_start(self, button, event):
     """ Play. """
@@ -255,16 +267,21 @@ class Gui():
     self.__song.load_from_file(self.__input_file)
     res = self.__song.compile_song()
     self.__chord_sheet.new_song_loaded()
-    #self.__source_editor.new_song_loaded(self.__song.write_to_string())
+    self.__source_editor.new_song_loaded(self.__song.write_to_string())
     self.refresh_chord_sheet()
     #self.__refresh_song_title()
     #if res > 0 or res == -1: self.__show_mma_error(res)
 
-  def switch_view_callback(self, item=None):
+  __ignore_toggle2 = False
+  def switch_view_callback(self, action, current):
     """ Signal handler for toggled in GtkRadioAction 'menuitem5' """
-    #if Gui.__ignore_toggle2:
-    #  Gui.__ignore_toggle2 = False
-    #else:
+    if Gui.__ignore_toggle2:
+      Gui.__ignore_toggle2 = False
+    else:
+      if self.uimanager.get_widget('/MenuBar/View/Chordsheet').get_active():
+        self.__notebook.set_current_page(0)
+      else:
+        self.__notebook.set_current_page(1)
     #  if self.__menuitem5.get_active():
     #    self.__notebook3.set_current_page(0)
     #  else:
@@ -322,7 +339,7 @@ class Gui():
     if show_error:
       if res == 0:
         """"""
-        #self.__source_editor.put_error_mark_to(-1)
+        self.__source_editor.put_error_mark_to(-1)
       elif res > 0 or res == -1:
         self.__show_mma_error(res)
     return res
@@ -440,7 +457,7 @@ class Gui():
     def on_draw(self, widget, cr):
       cr.set_source_surface(self.surface, 0.0, 0.0)
       cr.paint()
-      logging.debug('on_draw')
+      #logging.debug('on_draw')
       return False
 
     def on_realize(self, widget):
@@ -450,8 +467,8 @@ class Gui():
         color = Gdk.color_parse(Gui.ChordSheet.__color_no_song)
         cc.set_source_rgb(color.red, color.green, color.blue)
         cc.rectangle(0, 0, self.__drawing_area_width, self.__drawing_area_height)
-        logging.debug("width:%s" % self.__drawing_area_width)
-        logging.debug("height:%s" % self.__drawing_area_height)
+        #logging.debug("width:%s" % self.__drawing_area_width)
+        #logging.debug("height:%s" % self.__drawing_area_height)
         cc.fill()
         db.flush()
       else:
@@ -464,8 +481,6 @@ class Gui():
       if self.surface == None:
         allocation = widget.get_allocation()
         self.surface = widget.get_window().create_similar_surface(cairo.CONTENT_COLOR, allocation.width, allocation.height)
-      print widget.get_allocated_width()
-      print widget.get_allocated_height()
       logging.debug("on_configure")
       return False
 
@@ -758,6 +773,153 @@ class Gui():
         bar_y = bar_y + 1
       pos = self.__song.get_data().get_beats_per_bar() * 2 * bar_y + bar_x * 2 + bar_chords
       return pos
+  
+  class SourceEditor(Gtk.ScrolledWindow):
+    def __init__(self, song):
+      Gtk.ScrolledWindow.__init__(self)
+      self.__song = song
+      self.__init_gui()
+      self.__playhead_pos = -1
+      self.__error_mark_pos = -1
+      
+    def move_playhead_to(self, pos):
+      """ Highlight the line just being played. """
+      logging.debug("MOVING PLAYHEAD TO %i" % pos)
+      buff = self.__sourcebuffer
+      # remove the black background and the playhead marker
+      start, end = buff.get_bounds()
+      buff.remove_tag_by_name("playhead", start, end)
+      buff.remove_source_marks(start, end, self.LINE_MARKER)
+      # draw the background and the playhead marker again
+      if pos > -1:
+        iter1 = buff.get_iter_at_line(pos)
+        iter2 = buff.get_iter_at_line(pos + 1)
+        buff.apply_tag_by_name("playhead", iter1, iter2)
+        buff.create_source_mark(None, self.LINE_MARKER, iter1)
+      self.__playhead_pos = pos
+
+    def put_error_mark_to(self, line):
+      """ Put the red error mark at the beginning of the given line. """
+      buff = self.__sourcebuffer
+      start, end = buff.get_bounds()
+      # remove the red background and the error mark
+      buff.remove_tag_by_name("error", start, end)
+      buff.remove_source_marks(start, end, self.ERROR_MARKER)
+      # draw the red background and the error mark again
+      if line > -1:
+        # text background redimport logging
+        iter1 = buff.get_iter_at_line(line)
+        iter2 = buff.get_iter_at_line(line + 1)
+        buff.apply_tag_by_name("error", iter1, iter2)
+        # error marker    
+        it = buff.get_iter_at_line(line)
+        buff.create_source_mark(None, self.ERROR_MARKER, it)
+      self.__error_mark_pos = line
+
+    def new_song_loaded(self, mma_data):
+      self.refresh_source(mma_data)
+      self.put_error_mark_to(-1)
+      self.__move_cursor_home()
+
+    def refresh_source(self, mma_data):
+      """ Loads the new text into the source view, preserves cursor position, preserves marks. """
+      buff = self.__sourcebuffer
+      # load new text, preserve cursor position
+      offset = buff.props.cursor_position
+      buff.set_text(mma_data)
+      it = buff.get_iter_at_offset(offset)
+      buff.place_cursor(it)
+      # refresh marks
+      self.put_error_mark_to(self.__error_mark_pos)
+      self.move_playhead_to(self.__playhead_pos)
+
+    def grab_focus(self):
+      GObject.idle_add(self.__gtksourceview.grab_focus)
+
+    def has_focus(self):
+      return self.__gtksourceview.is_focus()
+
+    def cut_selection(self):
+      buff = self.__sourcebuffer
+      buff.cut_clipboard(Gtk.clipboard_get(), True)
+
+    def copy_selection(self):
+      buff = self.__sourcebuffer
+      buff.copy_clipboard(Gtk.clipboard_get())
+
+    def paste_selection(self):
+      buff = self.__sourcebuffer
+      buff.paste_clipboard(Gtk.clipboard_get(), None, True)
+
+    def delete_selection(self):
+      buff = self.__sourcebuffer
+      buff.delete_selection(False, True)
+
+    def select_all(self):
+      buff = self.__sourcebuffer
+      buff.select_range(buff.get_start_iter(), buff.get_end_iter())
+
+    def __init_gui(self):
+      #scrolledwindow6 = glade.get_object("scrolledwindow6")
+      self.__gtksourceview = GtkSource.View()
+      self.__sourcebuffer = GtkSource.Buffer()
+      view = self.__gtksourceview
+      buff = self.__sourcebuffer
+      view.set_buffer(buff)
+      self.add(view)
+      view.set_auto_indent(True)
+      view.set_highlight_current_line(True)
+      view.set_show_line_numbers(True)
+      view.set_show_line_marks(True)
+      view.set_show_right_margin(True)
+      view.set_insert_spaces_instead_of_tabs(True)
+      view.set_tab_width(4)
+      view.set_indent_width(-1)
+      view.set_right_margin_position(80)
+      view.set_smart_home_end(True)
+      view.set_indent_on_tab(True)
+      view.set_left_margin(2)
+      view.set_right_margin(2)
+      view.modify_font(Pango.FontDescription("mono 10"))
+      view.set_wrap_mode(Gtk.WrapMode.NONE)
+      # playhead text attributes
+      tag = buff.create_tag("playhead")
+      tag.props.background = "black"
+      tag.props.background_set = True
+      tag.props.foreground = "white"
+      tag.props.foreground_set = True
+      # error text attributes
+      tag = buff.create_tag("error")
+      tag.props.background = "red"
+      tag.props.background_set = True
+      # playhead marker
+      self.LINE_MARKER = 'lineMarker'
+      pixbuf = GdkPixbuf.Pixbuf.new_from_file(Glob.LINE_MARKER)
+      #view.set_mark_category_pixbuf(self.LINE_MARKER, pixbuf)
+      # error marker
+      self.ERROR_MARKER = 'errorMarker'
+      pixbuf = GdkPixbuf.Pixbuf.new_from_file(Glob.ERROR_MARKER)
+      #view.set_mark_category_pixbuf(self.ERROR_MARKER, pixbuf)
+      # buff parameters
+      buff.set_highlight_syntax(True)
+      buff.set_highlight_matching_brackets(True)
+      buff.set_max_undo_levels(50)
+      # when buff modified save needed
+      buff.connect("modified-changed", self.__modified_changed)
+      # and show it
+      self.__gtksourceview.show()
+
+    def __modified_changed(self, buff):
+      if self.__gtksourceview.is_focus():
+          buff = self.__sourcebuffer
+          mma_data = buff.get_text(buff.get_start_iter(), buff.get_end_iter())
+          self.__song.load_from_string(mma_data)
+      buff.set_modified(False)
+
+    def __move_cursor_home(self):
+      buff = self.__sourcebuffer
+      it = buff.get_iter_at_offset(0)
+      buff.place_cursor(it)
 
 def main():
   GObject.threads_init()
