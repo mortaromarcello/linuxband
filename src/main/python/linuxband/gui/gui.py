@@ -719,8 +719,8 @@ class Gui():
         lower_y = y + Gui.ChordSheet.__bar_height * 3 / 4 - point_size
         if end: x = x + self.__bar_info_width / 5
         else: x = x + self.__bar_info_width * 4 / 5 - point_size
-        cc.arc(x, upper_y, point_size, 0, 360 * 64)
-        cc.arc(x, lower_y, point_size, 0, 360 * 64)
+        cc.arc(x, upper_y, point_size, 0, math.radians(360))
+        cc.arc(x, lower_y, point_size, 0, math.radians(360))
         cc.fill()
         db.flush()
       else:
